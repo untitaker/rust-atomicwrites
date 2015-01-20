@@ -1,6 +1,6 @@
 #![allow(unstable)]
 use std::io;
-use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
+pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
 pub struct AtomicFile {
     pub path: Path,
@@ -27,13 +27,13 @@ impl AtomicFile {
     }
 
     fn get_tmpfile(&self) -> io::IoResult<io::File> {
-        let tmpdir = try!(io::TempDir::new_in(&self.tmpdir, "atomicwrite"));
+        let tmpdir = try!(io::TempDir::new_in(&self.tmpdir, ".atomicwrite"));
         io::File::create(&tmpdir.path().join(Path::new("tmpfile.tmp")))
     }
 
-    pub fn write(&self, f: &fn(&io::File) -> io::IoResult<()>) -> io::IoResult<()> {
+    pub fn write<F: FnMut(&mut io::File) -> io::IoResult<()>>(&self, mut f: F) -> io::IoResult<()> {
         let mut tmpfile = try!(self.get_tmpfile());
-        try!(f(&tmpfile));
+        try!(f(&mut tmpfile));
         try!(tmpfile.fsync());
         try!(self.commit(tmpfile.path()));
         Ok(())
