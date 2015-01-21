@@ -1,5 +1,6 @@
 #![allow(unstable)]
 use std::io;
+use std::os;
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
 pub struct AtomicFile {
