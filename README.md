@@ -15,3 +15,7 @@ This is not in a state where you want to use it.
     try!(af.write(|&: f| {
         f.write_str("HELLO")
     }));
+
+## License
+
+Licensed under MIT, see ``LICENSE``.

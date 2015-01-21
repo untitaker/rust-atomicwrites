@@ -1,5 +1,8 @@
 [package]
-
 name = "atomicwrites"
 version = "0.0.1"
+
 authors = ["Markus Unterwaditzer <markus@unterwaditzer.net>"]
+license = "MIT"
+readme = "README.md"
+keywords = ["filesystem", "posix"]
