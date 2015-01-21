@@ -29,26 +29,21 @@ impl AtomicFile {
     pub fn write<F: FnMut(&mut io::File) -> io::IoResult<()>>(&self, mut f: F) -> io::IoResult<()> {
         let tmpdir = try!(io::TempDir::new_in(&self.tmpdir, ".atomicwrite"));
         let tmppath = tmpdir.path().join(Path::new("tmpfile.tmp"));
-        let mut tmpfile = try!(io::File::create(&tmppath));
-
-        try!(f(&mut tmpfile));
-        try!(tmpfile.fsync());
-        try!(self.commit(tmpfile.path()));
+        {
+            let mut tmpfile = try!(io::File::create(&tmppath));
+            try!(f(&mut tmpfile));
+        };
+        try!(self.commit(&tmppath));
 
         Ok(())
     }
 
+    /// Atomically move/copy the file to self.path.
     fn commit(&self, tmppath: &Path) -> io::IoResult<()> {
-        match self.overwrite {
-            AllowOverwrite => {
-                try!(io::fs::rename(tmppath, &self.path));  // atomic
-            },
-            DisallowOverwrite => {
-                try!(io::fs::link(tmppath, &self.path)); // atomic
-                try!(io::fs::unlink(&self.path)); // doesn't matter if atomic
-            }
-        };
-        Ok(())
+        self.overwrite {
+            AllowOverwrite => io::fs::rename(tmppath, &self.path),
+            DisallowOverwrite => io::fs::link(tmppath, &self.path)
+        }
     }
 }
 
