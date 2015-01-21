@@ -4,6 +4,7 @@
 
 - [Documentation](http://rust-atomicwrites.unterwaditzer.net/)
 - [Repository](https://github.com/untitaker/rust-atomicwrites)
+- [Crates.io](https://crates.io/crates/atomicwrites)
 
 Atomic file-writes to POSIX filesystems. The basic idea is to write to
 temporary files, and move them when done writing. This avoids the problem of
