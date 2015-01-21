@@ -40,7 +40,7 @@ impl AtomicFile {
 
     /// Atomically move/copy the file to self.path.
     fn commit(&self, tmppath: &Path) -> io::IoResult<()> {
-        self.overwrite {
+        match self.overwrite {
             AllowOverwrite => io::fs::rename(tmppath, &self.path),
             DisallowOverwrite => io::fs::link(tmppath, &self.path)
         }
