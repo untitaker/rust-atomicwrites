@@ -28,7 +28,8 @@ impl AtomicFile {
 
     pub fn write<F: FnMut(&mut io::File) -> io::IoResult<()>>(&self, mut f: F) -> io::IoResult<()> {
         let tmpdir = try!(io::TempDir::new_in(&self.tmpdir, ".atomicwrite"));
-        let mut tmpfile = try!(io::File::create(&tmpdir.path().join(Path::new("tmpfile.tmp"))));
+        let tmppath = tmpdir.path().join(Path::new("tmpfile.tmp"));
+        let mut tmpfile = try!(io::File::create(&tmppath));
 
         try!(f(&mut tmpfile));
         try!(tmpfile.fsync());
