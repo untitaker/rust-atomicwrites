@@ -1,5 +1,7 @@
 # rust-atomicwrites
 
+[![Build Status](https://travis-ci.org/untitaker/rust-atomicwrites.svg?branch=master)](https://travis-ci.org/untitaker/rust-atomicwrites)
+
 Atomic file-writes to POSIX filesystems. The basic idea is to write to
 temporary files, and move them when done writing. This avoids the problem of
 two programs writing to the same file. For `AllowOverride`, `link + unlink` is
