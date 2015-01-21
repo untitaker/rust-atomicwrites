@@ -1,7 +1,6 @@
 #![allow(unstable)]
 extern crate atomicwrites;
 
-use std::os;
 use std::io;
 use atomicwrites::{AtomicFile,AllowOverwrite,DisallowOverwrite};
 
