@@ -24,7 +24,8 @@ used instead of `rename` to raise errors when the target path already exists.
 I'm not at all satisfied with this API, but there doesn't seem to be a
 different way to force the user to check for errors when closing the file. [See
 the relevant RFC
-discussion](https://github.com/rust-lang/rfcs/pull/576/files#r23627669).
+discussion](https://github.com/rust-lang/rfcs/pull/576/files#r23627669),
+suggestion in the issue tracker on how to improve the API are welcome too.
 
 ## License
 
