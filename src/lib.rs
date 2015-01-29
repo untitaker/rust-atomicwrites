@@ -1,7 +1,7 @@
 // DOCS
 
 #![allow(unstable)]
-use std::io;
+use std::old_io;
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
 pub struct AtomicFile {
@@ -30,11 +30,11 @@ impl AtomicFile {
 
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
     /// file atomically to `self.path`.
-    pub fn write<F: FnMut(&mut io::File) -> io::IoResult<()>>(&self, mut f: F) -> io::IoResult<()> {
-        let tmpdir = try!(io::TempDir::new_in(&self.tmpdir, ".atomicwrite"));
+    pub fn write<F: FnMut(&mut old_io::File) -> old_io::IoResult<()>>(&self, mut f: F) -> old_io::IoResult<()> {
+        let tmpdir = try!(old_io::TempDir::new_in(&self.tmpdir, ".atomicwrite"));
         let tmppath = tmpdir.path().join(Path::new("tmpfile.tmp"));
         {
-            let mut tmpfile = try!(io::File::create(&tmppath));
+            let mut tmpfile = try!(old_io::File::create(&tmppath));
             try!(f(&mut tmpfile));
         };
         try!(self.commit(&tmppath));
@@ -43,10 +43,10 @@ impl AtomicFile {
     }
 
     /// Atomically move/copy the file to self.path.
-    fn commit(&self, tmppath: &Path) -> io::IoResult<()> {
+    fn commit(&self, tmppath: &Path) -> old_io::IoResult<()> {
         match self.overwrite {
-            AllowOverwrite => io::fs::rename(tmppath, &self.path),
-            DisallowOverwrite => io::fs::link(tmppath, &self.path)
+            AllowOverwrite => old_io::fs::rename(tmppath, &self.path),
+            DisallowOverwrite => old_io::fs::link(tmppath, &self.path)
         }
     }
 }
