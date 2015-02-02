@@ -1,6 +1,6 @@
 // DOCS
 
-#![allow(unstable)]
+#![feature(path,io)]
 use std::old_io;
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
