@@ -80,7 +80,22 @@ pub mod posix {
     }
 }
 
-pub use self::posix::AtomicFile as PosixAtomicFile;
+pub mod windows {
+    use super::OverwriteBehavior;
 
-#[cfg(all(unix))]
+    /// Currently a stub. Windows support is not implemented yet.
+    pub struct AtomicFile {
+        path: Path,
+        overwrite: OverwriteBehavior
+    }
+}
+
+pub use self::posix::AtomicFile as PosixAtomicFile;
+pub use self::windows::AtomicFile as WindowsAtomicFile;
+
+
+#[cfg(unix)]
 pub use self::posix::AtomicFile as AtomicFile;
+
+#[cfg(windows)]
+pub use self::windows::AtomicFile as AtomicFile;
