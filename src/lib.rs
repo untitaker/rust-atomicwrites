@@ -1,6 +1,6 @@
 // DOCS
 
-#![feature(path,io)]
+#![feature(path,io,os)]
 
 extern crate tempdir;
 
@@ -10,6 +10,7 @@ use std::borrow::Borrow;
 use std::path;
 
 use tempdir::TempDir;
+
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
 
@@ -83,27 +84,73 @@ impl AtomicFile {
     }
 }
 
-#[cfg(unix)]
-fn replace_atomic_impl(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-    fs::rename(src, dst)
-}
 
 #[cfg(unix)]
-fn move_atomic_impl(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-    try!(fs::hard_link(src, dst));
-    fs::remove_file(src)
+mod imp {
+    use std::{io,fs,path};
+
+    pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
+        fs::rename(src, dst)
+    }
+
+    pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
+        try!(fs::hard_link(src, dst));
+        fs::remove_file(src)
+    }
 }
+
+#[cfg(windows)]
+mod imp {
+    extern crate winapi;
+    extern crate "kernel32-sys" as win32kernel;
+
+    use std::{io,os,path};
+
+    macro_rules! call {
+        ($e: expr) => (
+            if $e != 0 {
+                Ok(())
+            } else {
+                Err(io::Error::new(
+                    io::ErrorKind::Other,
+                    "A Windows API error occured.",
+                    Some(os::last_os_error()),
+                ))
+            }
+        )
+    }
+
+    fn path_to_windows_str(x: &path::Path) -> winapi::LPCWSTR {
+        x.to_str().unwrap().as_ptr() as winapi::LPCWSTR
+    }
+
+    pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
+        call!(unsafe {win32kernel::MoveFileExW(
+            path_to_windows_str(src), path_to_windows_str(dst),
+            winapi::MOVEFILE_WRITE_THROUGH | winapi::MOVEFILE_REPLACE_EXISTING
+        )})
+    }
+
+    pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
+        call!(unsafe {win32kernel::MoveFileExW(
+            path_to_windows_str(src), path_to_windows_str(dst),
+            winapi::MOVEFILE_WRITE_THROUGH
+        )})
+    }
+}
+
 
 /// Move `src` to `dst`. If `dst` exists, it will be silently overwritten.
 ///
 /// Both paths must reside on the same filesystem for the operation to be atomic.
 pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-    replace_atomic_impl(src, dst)
+    imp::replace_atomic(src, dst)
 }
+
 
 /// Move `src` to `dst`. An error will be returned if `dst` exists.
 ///
 /// Both paths must reside on the same filesystem for the operation to be atomic.
 pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-    move_atomic_impl(src, dst)
+    imp::move_atomic(src, dst)
 }
