@@ -30,72 +30,72 @@ pub enum OverwriteBehavior {
     DisallowOverwrite
 }
 
-pub mod posix {
-    use super::{GenericAtomicFile,OverwriteBehavior,AllowOverwrite,DisallowOverwrite};
-    use std::old_io;
-
-    pub struct AtomicFile {
-        path: Path,
-        overwrite: OverwriteBehavior,
-        tmpdir: Path
-    }
+pub struct AtomicFile {
+    path: Path,
+    overwrite: OverwriteBehavior,
+    tmpdir: Path
+}
 
 
-    impl AtomicFile {
-        pub fn new_with_tmpdir(path: &Path, overwrite: OverwriteBehavior, tmpdir: &Path) -> Self {
-            AtomicFile {
-                path: path.clone(),
-                overwrite: overwrite,
-                tmpdir: tmpdir.clone()
-            }
-        }
-
-        fn commit(&self, tmppath: &Path) -> old_io::IoResult<()> {
-            match self.overwrite {
-                AllowOverwrite => old_io::fs::rename(&tmppath, &self.path),
-                DisallowOverwrite => old_io::fs::link(&tmppath, &self.path)
-            }
+impl AtomicFile {
+    pub fn new_with_tmpdir(path: &Path, overwrite: OverwriteBehavior, tmpdir: &Path) -> Self {
+        AtomicFile {
+            path: path.clone(),
+            overwrite: overwrite,
+            tmpdir: tmpdir.clone()
         }
     }
 
-
-    impl GenericAtomicFile for AtomicFile {
-        fn new(path: &Path, overwrite: OverwriteBehavior) -> Self {
-            AtomicFile::new_with_tmpdir(path, overwrite, &path.dir_path())
+    fn commit(&self, tmppath: &Path) -> old_io::IoResult<()> {
+        match self.overwrite {
+            AllowOverwrite => replace_atomic(tmppath, self.path()),
+            DisallowOverwrite => move_atomic(tmppath, self.path())
         }
-
-        fn path(&self) -> &Path { &self.path }
-
-        fn write<F: FnMut(&mut old_io::File) -> old_io::IoResult<()>>(&self, mut f: F) -> old_io::IoResult<()> {
-            let tmpdir = try!(old_io::TempDir::new_in(&self.tmpdir, ".atomicwrite"));
-            let tmppath = tmpdir.path().join(Path::new("tmpfile.tmp"));
-            {
-                let mut tmpfile = try!(old_io::File::create(&tmppath));
-                try!(f(&mut tmpfile));
-            };
-            try!(self.commit(&tmppath));
-            Ok(())
-        }
-
     }
 }
 
-pub mod windows {
-    use super::OverwriteBehavior;
 
-    /// Currently a stub. Windows support is not implemented yet.
-    pub struct AtomicFile {
-        path: Path,
-        overwrite: OverwriteBehavior
+impl GenericAtomicFile for AtomicFile {
+    fn new(path: &Path, overwrite: OverwriteBehavior) -> Self {
+        AtomicFile::new_with_tmpdir(path, overwrite, &path.dir_path())
     }
+
+    fn path(&self) -> &Path { &self.path }
+
+    fn write<F: FnMut(&mut old_io::File) -> old_io::IoResult<()>>(&self, mut f: F) -> old_io::IoResult<()> {
+        let tmpdir = try!(old_io::TempDir::new_in(&self.tmpdir, ".atomicwrite"));
+        let tmppath = tmpdir.path().join(Path::new("tmpfile.tmp"));
+        {
+            let mut tmpfile = try!(old_io::File::create(&tmppath));
+            try!(f(&mut tmpfile));
+        };
+        try!(self.commit(&tmppath));
+        Ok(())
+    }
+
 }
-
-pub use self::posix::AtomicFile as PosixAtomicFile;
-pub use self::windows::AtomicFile as WindowsAtomicFile;
-
 
 #[cfg(unix)]
-pub use self::posix::AtomicFile as AtomicFile;
+fn replace_atomic_impl(src: &Path, dst: &Path) -> old_io::IoResult<()> {
+    old_io::fs::rename(src, dst)
+}
 
-#[cfg(windows)]
-pub use self::windows::AtomicFile as AtomicFile;
+#[cfg(unix)]
+fn move_atomic_impl(src: &Path, dst: &Path) -> old_io::IoResult<()> {
+    try!(old_io::fs::link(src, dst));
+    old_io::fs::unlink(src)
+}
+
+/// Move `src` to `dst`. If `dst` exists, it will be silently overwritten.
+///
+/// Both paths must reside on the same filesystem for the operation to be atomic.
+pub fn replace_atomic(src: &Path, dst: &Path) -> old_io::IoResult<()> {
+    replace_atomic_impl(src, dst)
+}
+
+/// Move `src` to `dst`. An error will be returned if `dst` exists.
+///
+/// Both paths must reside on the same filesystem for the operation to be atomic.
+pub fn move_atomic(src: &Path, dst: &Path) -> old_io::IoResult<()> {
+    move_atomic_impl(src, dst)
+}
