@@ -2,6 +2,7 @@
 extern crate atomicwrites;
 
 use std::old_io;
+use std::{fs,io};
 use atomicwrites::{GenericAtomicFile,AtomicFile,AllowOverwrite,DisallowOverwrite};
 
 fn get_tmp() -> Path {
