@@ -1,4 +1,4 @@
-#![feature(core,path,io)]
+#![feature(core,old_path,old_io)]
 extern crate atomicwrites;
 
 use std::old_io;
@@ -14,7 +14,7 @@ fn test_simple_allow_override() {
     let path = tmpdir.join(Path::new("haha"));
 
     let af: AtomicFile = GenericAtomicFile::new(&path, AllowOverwrite);
-    af.write(|&: f| f.write_str("HELLO")).unwrap();
+    af.write(|f| f.write_str("HELLO")).unwrap();
 
     let mut testfd = old_io::File::open(&path);
     let rv = testfd.read_to_string().unwrap();
@@ -27,7 +27,7 @@ fn test_simple_disallow_override() {
     let path = tmpdir.join(Path::new("haha"));
 
     let af: AtomicFile = GenericAtomicFile::new(&path, DisallowOverwrite);
-    af.write(|&: f| f.write_str("HELLO")).unwrap();
+    af.write(|f| f.write_str("HELLO")).unwrap();
 
     let mut testfd = old_io::File::open(&path);
     let rv = testfd.read_to_string().unwrap();

@@ -1,6 +1,6 @@
 // DOCS
 
-#![feature(path,io)]
+#![feature(old_path,old_io)]
 use std::old_io;
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 

@@ -16,7 +16,7 @@ used instead of `rename` to raise errors when the target path already exists.
     use atomicwrites::{AtomicFile,GenericAtomicFile,DisallowOverwrite};
 
     let af: AtomicFile = GenericAtomicFile::new(&Path::new("foo"), DisallowOverwrite);
-    try!(af.write(|&: f| {
+    try!(af.write(|f| {
         f.write_str("HELLO")
     }));
 
