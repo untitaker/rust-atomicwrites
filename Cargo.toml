@@ -11,3 +11,6 @@ description = "Atomic file-writes to POSIX filesystems."
 documentation = "http://rust-atomicwrites.unterwaditzer.net/"
 homepage = "http://rust-atomicwrites.unterwaditzer.net/"
 repository = "https://github.com/untitaker/rust-atomicwrites"
+
+[dependencies]
+tempdir = "0.3"

@@ -1,7 +1,16 @@
 // DOCS
 
-#![feature(old_path,old_io)]
-use std::old_io;
+#![feature(path,io,std_misc)]
+
+extern crate tempdir;
+
+use std::io;
+use std::fs;
+use std::ffi::AsOsStr;
+use std::borrow::Borrow;
+use std::path;
+
+use tempdir::TempDir;
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
 pub trait GenericAtomicFile {
@@ -9,14 +18,14 @@ pub trait GenericAtomicFile {
     ///
     /// If `DisallowOverwrite` is given, errors will be returned from `self.write(...)` if the file
     /// exists.
-    fn new(path: &Path, overwrite: OverwriteBehavior) -> Self;
+    fn new(path: &path::Path, overwrite: OverwriteBehavior) -> Self;
 
     /// Get the target filepath.
-    fn path(&self) -> &Path;
+    fn path(&self) -> &path::Path;
 
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
     /// file atomically to `self.path`.
-    fn write<F: FnMut(&mut old_io::File) -> old_io::IoResult<()>>(&self, mut f: F) -> old_io::IoResult<()>;
+    fn write<F: FnMut(&mut fs::File) -> io::Result<()>>(&self, mut f: F) -> io::Result<()>;
 }
 
 
@@ -31,22 +40,22 @@ pub enum OverwriteBehavior {
 }
 
 pub struct AtomicFile {
-    path: Path,
+    path: path::PathBuf,
     overwrite: OverwriteBehavior,
-    tmpdir: Path
+    tmpdir: path::PathBuf
 }
 
 
 impl AtomicFile {
-    pub fn new_with_tmpdir(path: &Path, overwrite: OverwriteBehavior, tmpdir: &Path) -> Self {
+    pub fn new_with_tmpdir(path: &path::Path, overwrite: OverwriteBehavior, tmpdir: &path::Path) -> Self {
         AtomicFile {
-            path: path.clone(),
+            path: path.to_path_buf(),
             overwrite: overwrite,
-            tmpdir: tmpdir.clone()
+            tmpdir: tmpdir.to_path_buf()
         }
     }
 
-    fn commit(&self, tmppath: &Path) -> old_io::IoResult<()> {
+    fn commit(&self, tmppath: &path::Path) -> io::Result<()> {
         match self.overwrite {
             AllowOverwrite => replace_atomic(tmppath, self.path()),
             DisallowOverwrite => move_atomic(tmppath, self.path())
@@ -56,17 +65,28 @@ impl AtomicFile {
 
 
 impl GenericAtomicFile for AtomicFile {
-    fn new(path: &Path, overwrite: OverwriteBehavior) -> Self {
-        AtomicFile::new_with_tmpdir(path, overwrite, &path.dir_path())
+    fn new(path: &path::Path, overwrite: OverwriteBehavior) -> Self {
+        AtomicFile::new_with_tmpdir(path, overwrite, &path.parent().unwrap_or(&path))
     }
 
-    fn path(&self) -> &Path { &self.path }
+    fn path(&self) -> &path::Path { &self.path.borrow() }
 
-    fn write<F: FnMut(&mut old_io::File) -> old_io::IoResult<()>>(&self, mut f: F) -> old_io::IoResult<()> {
-        let tmpdir = try!(old_io::TempDir::new_in(&self.tmpdir, ".atomicwrite"));
-        let tmppath = tmpdir.path().join(Path::new("tmpfile.tmp"));
+    fn write<F: FnMut(&mut fs::File) -> io::Result<()>>(&self, mut f: F) -> io::Result<()> {
+        let tmpdir = match TempDir::new_in(
+            &self.tmpdir,
+            ".atomicwrite"
+        ) {
+            Ok(x) => x,
+            Err(_) => return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "Failed to create a temporary directory.",
+                None
+            ))
+        };
+
+        let tmppath = path::Path::new(tmpdir.path().as_os_str()).join("tmpfile.tmp");
         {
-            let mut tmpfile = try!(old_io::File::create(&tmppath));
+            let mut tmpfile = try!(fs::File::create(&tmppath));
             try!(f(&mut tmpfile));
         };
         try!(self.commit(&tmppath));
@@ -76,26 +96,26 @@ impl GenericAtomicFile for AtomicFile {
 }
 
 #[cfg(unix)]
-fn replace_atomic_impl(src: &Path, dst: &Path) -> old_io::IoResult<()> {
-    old_io::fs::rename(src, dst)
+fn replace_atomic_impl(src: &path::Path, dst: &path::Path) -> io::Result<()> {
+    fs::rename(src, dst)
 }
 
 #[cfg(unix)]
-fn move_atomic_impl(src: &Path, dst: &Path) -> old_io::IoResult<()> {
-    try!(old_io::fs::link(src, dst));
-    old_io::fs::unlink(src)
+fn move_atomic_impl(src: &path::Path, dst: &path::Path) -> io::Result<()> {
+    try!(fs::hard_link(src, dst));
+    fs::remove_file(src)
 }
 
 /// Move `src` to `dst`. If `dst` exists, it will be silently overwritten.
 ///
 /// Both paths must reside on the same filesystem for the operation to be atomic.
-pub fn replace_atomic(src: &Path, dst: &Path) -> old_io::IoResult<()> {
+pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
     replace_atomic_impl(src, dst)
 }
 
 /// Move `src` to `dst`. An error will be returned if `dst` exists.
 ///
 /// Both paths must reside on the same filesystem for the operation to be atomic.
-pub fn move_atomic(src: &Path, dst: &Path) -> old_io::IoResult<()> {
+pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
     move_atomic_impl(src, dst)
 }
