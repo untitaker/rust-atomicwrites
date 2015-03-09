@@ -14,7 +14,7 @@ fn get_tmp() -> path::PathBuf {
 #[test]
 fn test_simple_allow_override() {
     let tmpdir = get_tmp();
-    let path = tmpdir.join(&path::Path::new("haha"));
+    let path = tmpdir.join("haha");
 
     let af = AtomicFile::new(&path, AllowOverwrite);
     af.write(|f| f.write_all(b"HELLO")).unwrap();
@@ -28,7 +28,7 @@ fn test_simple_allow_override() {
 #[test]
 fn test_simple_disallow_override() {
     let tmpdir = get_tmp();
-    let path = tmpdir.join(&path::Path::new("haha"));
+    let path = tmpdir.join("haha");
 
     let af = AtomicFile::new(&path, DisallowOverwrite);
     af.write(|f| f.write_all(b"HELLO")).unwrap();
@@ -38,4 +38,3 @@ fn test_simple_disallow_override() {
     testfd.read_to_string(&mut rv).unwrap();
     assert_eq!(rv.as_slice(), "HELLO");
 }
-
