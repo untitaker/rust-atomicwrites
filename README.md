@@ -20,10 +20,6 @@ used instead of `rename` to raise errors when the target path already exists.
         f.write_all(b"HELLO")
     }));
 
-Similar to `std::path`, `AtomicFile` should be used unless platform-specific
-code is written. In order to use any of `AtomicFile`'s methods, you also have
-to `use GenericAtomicFile` for now.
-
 I'm not at all satisfied with this API, but there doesn't seem to be a
 different way to force the user to check for errors when closing the file. [See
 the relevant RFC discussion](https://github.com/rust-lang/rfcs/pull/576),
