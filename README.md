@@ -13,11 +13,11 @@ used instead of `rename` to raise errors when the target path already exists.
 
 ## Example
 
-    use atomicwrites::{AtomicFile,GenericAtomicFile,DisallowOverwrite};
+    use atomicwrites::{AtomicFile,DisallowOverwrite};
 
-    let af: AtomicFile = GenericAtomicFile::new(&Path::new("foo"), DisallowOverwrite);
+    let af = AtomicFile::new(&Path::new("foo"), DisallowOverwrite);
     try!(af.write(|f| {
-        f.write_str("HELLO")
+        f.write_all(b"HELLO")
     }));
 
 Similar to `std::path`, `AtomicFile` should be used unless platform-specific
