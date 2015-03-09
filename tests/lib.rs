@@ -46,6 +46,7 @@ fn test_allowed_pathtypes() {
     AtomicFile::new(&path::PathBuf::new("haha"), DisallowOverwrite);
 }
 
+#[cfg(unix)]  // FIXME
 #[test]
 fn test_unicode() {
     let dmitri = "Дмитрий";
