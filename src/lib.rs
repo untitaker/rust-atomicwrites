@@ -12,21 +12,6 @@ use std::path;
 use tempdir::TempDir;
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
-pub trait GenericAtomicFile {
-    /// Helper for writing to `path` in write-only mode.
-    ///
-    /// If `DisallowOverwrite` is given, errors will be returned from `self.write(...)` if the file
-    /// exists.
-    fn new(path: &path::Path, overwrite: OverwriteBehavior) -> Self;
-
-    /// Get the target filepath.
-    fn path(&self) -> &path::Path;
-
-    /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
-    /// file atomically to `self.path`.
-    fn write<F: FnMut(&mut fs::File) -> io::Result<()>>(&self, mut f: F) -> io::Result<()>;
-}
-
 
 #[derive(Copy)]
 pub enum OverwriteBehavior {
@@ -60,16 +45,21 @@ impl AtomicFile {
             DisallowOverwrite => move_atomic(tmppath, self.path())
         }
     }
-}
 
-
-impl GenericAtomicFile for AtomicFile {
+    /// Helper for writing to `path` in write-only mode.
+    ///
+    /// If `DisallowOverwrite` is given, errors will be returned from `self.write(...)` if the file
+    /// exists.
     fn new(path: &path::Path, overwrite: OverwriteBehavior) -> Self {
         AtomicFile::new_with_tmpdir(path, overwrite, &path.parent().unwrap_or(&path))
     }
 
+    /// Get the target filepath.
     fn path(&self) -> &path::Path { &self.path.borrow() }
 
+
+    /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
+    /// file atomically to `self.path`.
     fn write<F: FnMut(&mut fs::File) -> io::Result<()>>(&self, mut f: F) -> io::Result<()> {
         let tmpdir = match TempDir::new_in(
             &self.tmpdir,
@@ -91,7 +81,6 @@ impl GenericAtomicFile for AtomicFile {
         try!(self.commit(&tmppath));
         Ok(())
     }
-
 }
 
 #[cfg(unix)]
