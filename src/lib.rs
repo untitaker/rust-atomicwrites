@@ -1,6 +1,6 @@
 // DOCS
 
-#![feature(path,io,os)]
+#![feature(path,io)]
 
 extern crate tempdir;
 
@@ -105,6 +105,8 @@ mod imp {
     extern crate "kernel32-sys" as win32kernel;
 
     use std::{io,os,path};
+    use std::ffi::AsOsStr;
+    use std::os::windows::OsStrExt;
 
     macro_rules! call {
         ($e: expr) => (
@@ -120,19 +122,20 @@ mod imp {
         )
     }
 
-    fn path_to_windows_str(x: &path::Path) -> winapi::LPCSTR {
-        x.to_str().unwrap().as_ptr() as winapi::LPCSTR
+    fn path_to_windows_str(x: &path::Path) -> winapi::LPCWSTR {
+        let v: Vec<winapi::WCHAR> = x.as_os_str().encode_wide().collect();
+        v.as_slice().as_ptr()
     }
 
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        call!(unsafe {win32kernel::MoveFileExA(
+        call!(unsafe {win32kernel::MoveFileExW(
             path_to_windows_str(src), path_to_windows_str(dst),
             winapi::MOVEFILE_WRITE_THROUGH | winapi::MOVEFILE_REPLACE_EXISTING
         )})
     }
 
     pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        call!(unsafe {win32kernel::MoveFileExA(
+        call!(unsafe {win32kernel::MoveFileExW(
             path_to_windows_str(src), path_to_windows_str(dst),
             winapi::MOVEFILE_WRITE_THROUGH
         )})
