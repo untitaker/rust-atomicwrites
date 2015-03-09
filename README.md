@@ -7,10 +7,12 @@
 - [Repository](https://github.com/untitaker/rust-atomicwrites)
 - [Crates.io](https://crates.io/crates/atomicwrites)
 
-Atomic file-writes to POSIX filesystems. The basic idea is to write to
-temporary files, and move them when done writing. This avoids the problem of
-two programs writing to the same file. For `AllowOverride`, `link + unlink` is
-used instead of `rename` to raise errors when the target path already exists.
+Atomic file-writes. The basic idea is to write to temporary files, and move
+them when done writing. This avoids the problem of two programs writing to the
+same file. For `AllowOverride`, `link + unlink` is used instead of `rename` to
+raise errors when the target path already exists.
+
+Windows support is incomplete in the sense that non-ASCII filenames don't work.
 
 ## Example
 

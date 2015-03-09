@@ -7,7 +7,7 @@ license = "MIT"
 keywords = ["filesystem", "posix"]
 readme = "README.md"
 
-description = "Atomic file-writes to POSIX filesystems."
+description = "Atomic file-writes."
 documentation = "http://rust-atomicwrites.unterwaditzer.net/"
 homepage = "http://rust-atomicwrites.unterwaditzer.net/"
 repository = "https://github.com/untitaker/rust-atomicwrites"
