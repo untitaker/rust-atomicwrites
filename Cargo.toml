@@ -14,3 +14,11 @@ repository = "https://github.com/untitaker/rust-atomicwrites"
 
 [dependencies]
 tempdir = "0.3"
+
+[target.x86_64-pc-windows-gnu.dependencies]
+winapi = "*"
+kernel32-sys = "*"
+
+[target.i686-pc-windows-gnu.dependencies]
+winapi = "*"
+kernel32-sys = "*"

@@ -45,3 +45,23 @@ fn test_allowed_pathtypes() {
     AtomicFile::new(&path::Path::new("haha"), DisallowOverwrite);
     AtomicFile::new(&path::PathBuf::new("haha"), DisallowOverwrite);
 }
+
+#[cfg(unix)]  // FIXME
+#[test]
+fn test_unicode() {
+    let dmitri = "Дмитрий";
+    let greeting = format!("HELLO {}", dmitri);
+
+    let tmpdir = get_tmp();
+    let path = tmpdir.join(dmitri);
+
+    let af = AtomicFile::new(&path, DisallowOverwrite);
+    af.write(|f| {
+        f.write_all(greeting.as_bytes())
+    }).unwrap();
+
+    let mut rv = String::new();
+    let mut testfd = fs::File::open(&path).unwrap();
+    testfd.read_to_string(&mut rv).unwrap();
+    assert_eq!(rv, greeting);
+}
