@@ -1,12 +1,11 @@
 // DOCS
 
-#![feature(path,io,std_misc)]
+#![feature(path,io)]
 
 extern crate tempdir;
 
 use std::io;
 use std::fs;
-use std::ffi::AsOsStr;
 use std::borrow::Borrow;
 use std::path;
 
@@ -84,7 +83,7 @@ impl GenericAtomicFile for AtomicFile {
             ))
         };
 
-        let tmppath = path::Path::new(tmpdir.path().as_os_str()).join("tmpfile.tmp");
+        let tmppath = tmpdir.path().join("tmpfile.tmp");
         {
             let mut tmpfile = try!(fs::File::create(&tmppath));
             try!(f(&mut tmpfile));
