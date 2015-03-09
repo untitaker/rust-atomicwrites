@@ -120,19 +120,19 @@ mod imp {
         )
     }
 
-    fn path_to_windows_str(x: &path::Path) -> winapi::LPCWSTR {
-        x.to_str().unwrap().as_ptr() as winapi::LPCWSTR
+    fn path_to_windows_str(x: &path::Path) -> winapi::LPCSTR {
+        x.to_str().unwrap().as_ptr() as winapi::LPCSTR
     }
 
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        call!(unsafe {win32kernel::MoveFileExW(
+        call!(unsafe {win32kernel::MoveFileExA(
             path_to_windows_str(src), path_to_windows_str(dst),
             winapi::MOVEFILE_WRITE_THROUGH | winapi::MOVEFILE_REPLACE_EXISTING
         )})
     }
 
     pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        call!(unsafe {win32kernel::MoveFileExW(
+        call!(unsafe {win32kernel::MoveFileExA(
             path_to_windows_str(src), path_to_windows_str(dst),
             winapi::MOVEFILE_WRITE_THROUGH
         )})
