@@ -38,3 +38,10 @@ fn test_simple_disallow_override() {
     testfd.read_to_string(&mut rv).unwrap();
     assert_eq!(rv.as_slice(), "HELLO");
 }
+
+#[test]
+fn test_allowed_pathtypes() {
+    AtomicFile::new(&"haha", DisallowOverwrite);
+    AtomicFile::new(&path::Path::new("haha"), DisallowOverwrite);
+    AtomicFile::new(&path::PathBuf::new("haha"), DisallowOverwrite);
+}
