@@ -41,6 +41,7 @@ fn test_simple_disallow_override() {
 
 #[test]
 fn test_allowed_pathtypes() {
+    AtomicFile::new("haha", DisallowOverwrite);
     AtomicFile::new(&"haha", DisallowOverwrite);
     AtomicFile::new(&path::Path::new("haha"), DisallowOverwrite);
     AtomicFile::new(&path::PathBuf::new("haha"), DisallowOverwrite);
