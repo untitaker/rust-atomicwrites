@@ -32,7 +32,16 @@ pub struct AtomicFile {
 
 
 impl AtomicFile {
-    pub fn new_with_tmpdir(path: &path::AsPath, overwrite: OverwriteBehavior, tmpdir: &path::AsPath) -> Self {
+    /// Helper for writing to `path` in write-only mode.
+    ///
+    /// If `DisallowOverwrite` is given, errors will be returned from `self.write(...)` if the file
+    /// exists.
+    pub fn new<P: path::AsPath + ?Sized>(path: &P, overwrite: OverwriteBehavior) -> Self {
+        let p = path.as_path();
+        AtomicFile::new_with_tmpdir(path, overwrite, p.parent().unwrap_or(p))
+    }
+
+    pub fn new_with_tmpdir<P: path::AsPath + ?Sized>(path: &P, overwrite: OverwriteBehavior, tmpdir: &P) -> Self {
         AtomicFile {
             path: path.as_path().to_path_buf(),
             overwrite: overwrite,
@@ -45,14 +54,6 @@ impl AtomicFile {
             AllowOverwrite => replace_atomic(tmppath, self.path()),
             DisallowOverwrite => move_atomic(tmppath, self.path())
         }
-    }
-
-    /// Helper for writing to `path` in write-only mode.
-    ///
-    /// If `DisallowOverwrite` is given, errors will be returned from `self.write(...)` if the file
-    /// exists.
-    pub fn new(path: &path::AsPath, overwrite: OverwriteBehavior) -> Self {
-        AtomicFile::new_with_tmpdir(path, overwrite, &path.as_path().parent().unwrap_or(path.as_path()))
     }
 
     /// Get the target filepath.
