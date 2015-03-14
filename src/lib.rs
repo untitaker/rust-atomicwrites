@@ -38,7 +38,7 @@ impl AtomicFile {
     /// exists.
     pub fn new<P: path::AsPath + ?Sized>(path: &P, overwrite: OverwriteBehavior) -> Self {
         let p = path.as_path();
-        AtomicFile::new_with_tmpdir(path, overwrite, p.parent().unwrap_or(p))
+        AtomicFile::new_with_tmpdir(p, overwrite, p.parent().unwrap_or(p))
     }
 
     pub fn new_with_tmpdir<P: path::AsPath + ?Sized>(path: &P, overwrite: OverwriteBehavior, tmpdir: &P) -> Self {
