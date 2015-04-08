@@ -103,27 +103,23 @@ mod imp {
     extern crate winapi;
     extern crate kernel32 as win32kernel;
 
-    use std::{io,os,path};
-    use std::ffi::AsOsStr;
-    use std::os::windows::OsStrExt;
+    use std::{io,path};
+    use std::ffi::OsStr;
+    use std::os::windows::ffi::OsStrExt;
 
     macro_rules! call {
         ($e: expr) => (
             if $e != 0 {
                 Ok(())
             } else {
-                Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    "A Windows API error occured.",
-                    Some(os::last_os_error()),
-                ))
+                Err(io::Error::last_os_error())
             }
         )
     }
 
     fn path_to_windows_str(x: &path::Path) -> winapi::LPCWSTR {
-        let v: Vec<winapi::WCHAR> = x.as_os_str().encode_wide().collect();
-        v.as_slice().as_ptr()
+        let v: Vec<winapi::WCHAR> = OsStr::new(x).encode_wide().collect();
+        v[..].as_ptr()
     }
 
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
