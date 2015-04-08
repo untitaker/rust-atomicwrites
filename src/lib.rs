@@ -101,7 +101,7 @@ mod imp {
 #[cfg(windows)]
 mod imp {
     extern crate winapi;
-    extern crate "kernel32-sys" as win32kernel;
+    extern crate kernel32 as win32kernel;
 
     use std::{io,os,path};
     use std::ffi::AsOsStr;
