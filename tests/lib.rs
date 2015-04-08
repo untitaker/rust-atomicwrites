@@ -1,4 +1,3 @@
-#![feature(core,io,path)]
 extern crate atomicwrites;
 extern crate tempdir;
 
@@ -22,7 +21,7 @@ fn test_simple_allow_override() {
     let mut rv = String::new();
     let mut testfd = fs::File::open(&path).unwrap();
     testfd.read_to_string(&mut rv).unwrap();
-    assert_eq!(rv.as_slice(), "HELLO");
+    assert_eq!(&rv[..], "HELLO");
 }
 
 #[test]
@@ -36,7 +35,7 @@ fn test_simple_disallow_override() {
     let mut rv = String::new();
     let mut testfd = fs::File::open(&path).unwrap();
     testfd.read_to_string(&mut rv).unwrap();
-    assert_eq!(rv.as_slice(), "HELLO");
+    assert_eq!(&rv[..], "HELLO");
 }
 
 #[test]
@@ -44,7 +43,7 @@ fn test_allowed_pathtypes() {
     AtomicFile::new("haha", DisallowOverwrite);
     AtomicFile::new(&"haha", DisallowOverwrite);
     AtomicFile::new(&path::Path::new("haha"), DisallowOverwrite);
-    AtomicFile::new(&path::PathBuf::new("haha"), DisallowOverwrite);
+    AtomicFile::new(&path::PathBuf::from("haha"), DisallowOverwrite);
 }
 
 #[test]

@@ -1,20 +1,19 @@
 // DOCS
 
-#![feature(path,io)]
-
 extern crate tempdir;
 
 use std::io;
 use std::fs;
 use std::borrow::Borrow;
 use std::path;
+use std::convert::AsRef;
 
 use tempdir::TempDir;
 
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
 
-#[derive(Copy)]
+#[derive(Clone,Copy)]
 pub enum OverwriteBehavior {
     /// Overwrite files silently.
     AllowOverwrite,
@@ -36,16 +35,16 @@ impl AtomicFile {
     ///
     /// If `DisallowOverwrite` is given, errors will be returned from `self.write(...)` if the file
     /// exists.
-    pub fn new<P: path::AsPath + ?Sized>(path: &P, overwrite: OverwriteBehavior) -> Self {
-        let p = path.as_path();
+    pub fn new<P: AsRef<path::Path>>(path: P, overwrite: OverwriteBehavior) -> Self {
+        let p = path.as_ref();
         AtomicFile::new_with_tmpdir(p, overwrite, p.parent().unwrap_or(p))
     }
 
-    pub fn new_with_tmpdir<P: path::AsPath + ?Sized>(path: &P, overwrite: OverwriteBehavior, tmpdir: &P) -> Self {
+    pub fn new_with_tmpdir<P: AsRef<path::Path>>(path: P, overwrite: OverwriteBehavior, tmpdir: P) -> Self {
         AtomicFile {
-            path: path.as_path().to_path_buf(),
+            path: path.as_ref().to_path_buf(),
             overwrite: overwrite,
-            tmpdir: tmpdir.as_path().to_path_buf()
+            tmpdir: tmpdir.as_ref().to_path_buf()
         }
     }
 
@@ -70,8 +69,7 @@ impl AtomicFile {
             Ok(x) => x,
             Err(_) => return Err(io::Error::new(
                 io::ErrorKind::Other,
-                "Failed to create a temporary directory.",
-                None
+                "Failed to create a temporary directory."
             ))
         };
 
@@ -103,7 +101,7 @@ mod imp {
 #[cfg(windows)]
 mod imp {
     extern crate winapi;
-    extern crate "kernel32-sys" as win32kernel;
+    extern crate kernel32_sys as win32kernel;
 
     use std::{io,os,path};
     use std::ffi::AsOsStr;
