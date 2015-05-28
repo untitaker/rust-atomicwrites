@@ -13,7 +13,7 @@ homepage = "http://rust-atomicwrites.unterwaditzer.net/"
 repository = "https://github.com/untitaker/rust-atomicwrites"
 
 [dependencies]
-tempdir = "0.3"
+tempdir = "*"
 
 [target.x86_64-pc-windows-gnu.dependencies]
 winapi = "*"
