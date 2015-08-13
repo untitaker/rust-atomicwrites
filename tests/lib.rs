@@ -17,6 +17,7 @@ fn test_simple_allow_override() {
 
     let af = AtomicFile::new(&path, AllowOverwrite);
     af.write(|f| f.write_all(b"HELLO")).unwrap();
+    af.write(|f| f.write_all(b"HELLO")).unwrap();
 
     let mut rv = String::new();
     let mut testfd = fs::File::open(&path).unwrap();
@@ -31,6 +32,7 @@ fn test_simple_disallow_override() {
 
     let af = AtomicFile::new(&path, DisallowOverwrite);
     af.write(|f| f.write_all(b"HELLO")).unwrap();
+    assert!(af.write(|f| f.write_all(b"HELLO")).is_err());
 
     let mut rv = String::new();
     let mut testfd = fs::File::open(&path).unwrap();
