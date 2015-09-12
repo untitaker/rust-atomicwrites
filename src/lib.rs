@@ -117,21 +117,20 @@ mod imp {
         )
     }
 
-    fn path_to_windows_str(x: &path::Path) -> winapi::LPCWSTR {
-        let v: Vec<winapi::WCHAR> = OsStr::new(x).encode_wide().collect();
-        v[..].as_ptr()
+    fn path_to_windows_str<T: AsRef<OsStr>>(x: T) -> Vec<winapi::WCHAR> {
+        x.as_ref().encode_wide().chain(Some(0)).collect()
     }
 
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
         call!(unsafe {win32kernel::MoveFileExW(
-            path_to_windows_str(src), path_to_windows_str(dst),
+            path_to_windows_str(src).as_ptr(), path_to_windows_str(dst).as_ptr(),
             winapi::MOVEFILE_WRITE_THROUGH | winapi::MOVEFILE_REPLACE_EXISTING
         )})
     }
 
     pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
         call!(unsafe {win32kernel::MoveFileExW(
-            path_to_windows_str(src), path_to_windows_str(dst),
+            path_to_windows_str(src).as_ptr(), path_to_windows_str(dst).as_ptr(),
             winapi::MOVEFILE_WRITE_THROUGH
         )})
     }
