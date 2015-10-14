@@ -62,16 +62,10 @@ impl AtomicFile {
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
     /// file atomically to `self.path`.
     pub fn write<E, F: FnMut(&mut fs::File) -> io::Result<E>>(&self, mut f: F) -> io::Result<E> {
-        let tmpdir = match TempDir::new_in(
+        let tmpdir = try!(TempDir::new_in(
             &self.tmpdir,
             ".atomicwrite"
-        ) {
-            Ok(x) => x,
-            Err(_) => return Err(io::Error::new(
-                io::ErrorKind::Other,
-                "Failed to create a temporary directory."
-            ))
-        };
+        ));
 
         let tmppath = tmpdir.path().join("tmpfile.tmp");
         let rv = try!({
