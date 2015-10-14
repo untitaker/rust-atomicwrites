@@ -1,14 +1,15 @@
 // DOCS
 
-extern crate tempdir;
+extern crate tempfile;
 
 use std::io;
 use std::fs;
+use std::mem;
 use std::borrow::Borrow;
 use std::path;
 use std::convert::AsRef;
 
-use tempdir::TempDir;
+use tempfile::NamedTempFile;
 
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
@@ -62,17 +63,11 @@ impl AtomicFile {
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
     /// file atomically to `self.path`.
     pub fn write<E, F: FnMut(&mut fs::File) -> io::Result<E>>(&self, mut f: F) -> io::Result<E> {
-        let tmpdir = try!(TempDir::new_in(
-            &self.tmpdir,
-            ".atomicwrite"
-        ));
-
-        let tmppath = tmpdir.path().join("tmpfile.tmp");
-        let rv = try!({
-            let mut tmpfile = try!(fs::File::create(&tmppath));
-            f(&mut tmpfile)
-        });
-        try!(self.commit(&tmppath));
+        let mut tmpfile = try!(NamedTempFile::new_in(&self.tmpdir));
+        let rv = try!(f(&mut tmpfile));
+        try!(tmpfile.sync_all());
+        try!(self.commit(tmpfile.path()));
+        mem::forget(tmpfile);  // Ensure file isn't cleaned up
         Ok(rv)
     }
 }
