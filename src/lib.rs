@@ -63,9 +63,9 @@ impl AtomicFile {
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
     /// file atomically to `self.path`.
     pub fn write<E, F: FnMut(&mut fs::File) -> io::Result<E>>(&self, mut f: F) -> io::Result<E> {
-        let mut tmpfile = try!(NamedTempFile::new_in(&self.tmpdir));
+        let mut tmpfile = NamedTempFile::new_in(&self.tmpdir).ok().expect("Failed to create tmpfile");
         let rv = try!(f(&mut tmpfile));
-        //try!(tmpfile.sync_all());
+        try!(tmpfile.sync_all());
         try!(self.commit(tmpfile.path()));
         mem::forget(tmpfile);  // Ensure file isn't cleaned up
         Ok(rv)
