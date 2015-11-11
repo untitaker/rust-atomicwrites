@@ -65,7 +65,7 @@ impl AtomicFile {
     pub fn write<E, F: FnMut(&mut fs::File) -> io::Result<E>>(&self, mut f: F) -> io::Result<E> {
         let mut tmpfile = try!(NamedTempFile::new_in(&self.tmpdir));
         let rv = try!(f(&mut tmpfile));
-        try!(tmpfile.sync_all());
+        //try!(tmpfile.sync_all());
         try!(self.commit(tmpfile.path()));
         mem::forget(tmpfile);  // Ensure file isn't cleaned up
         Ok(rv)
