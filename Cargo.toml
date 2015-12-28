@@ -17,16 +17,16 @@ tempdir = "*"
 
 [target.x86_64-pc-windows-gnu.dependencies]
 winapi = "0.2"
-kernel32-sys = "0.1"
+kernel32-sys = "0.2"
 
 [target.i686-pc-windows-gnu.dependencies]
 winapi = "0.2"
-kernel32-sys = "0.1"
+kernel32-sys = "0.2"
 
 [target.x86_64-pc-windows-msvc.dependencies]
 winapi = "0.2"
-kernel32-sys = "0.1"
+kernel32-sys = "0.2"
 
 [target.i686-pc-windows-msvc.dependencies]
 winapi = "0.2"
-kernel32-sys = "0.1"
+kernel32-sys = "0.2"
