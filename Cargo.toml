@@ -8,8 +8,8 @@ keywords = ["filesystem", "posix"]
 readme = "README.md"
 
 description = "Atomic file-writes."
-documentation = "http://rust-atomicwrites.unterwaditzer.net/"
-homepage = "http://rust-atomicwrites.unterwaditzer.net/"
+documentation = "https://rust-atomicwrites.unterwaditzer.net/"
+homepage = "https://rust-atomicwrites.unterwaditzer.net/"
 repository = "https://github.com/untitaker/rust-atomicwrites"
 
 [dependencies]
