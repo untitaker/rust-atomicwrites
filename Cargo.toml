@@ -12,8 +12,11 @@ documentation = "https://rust-atomicwrites.unterwaditzer.net/"
 homepage = "https://rust-atomicwrites.unterwaditzer.net/"
 repository = "https://github.com/untitaker/rust-atomicwrites"
 
-[dependencies]
+[dev-dependencies]
 tempdir = "*"
+
+[dependencies]
+tempfile = "*"
 
 [target.x86_64-pc-windows-gnu.dependencies]
 winapi = "0.2"
