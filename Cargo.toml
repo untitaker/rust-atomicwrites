@@ -15,18 +15,9 @@ repository = "https://github.com/untitaker/rust-atomicwrites"
 [dependencies]
 tempdir = "*"
 
-[target.x86_64-pc-windows-gnu.dependencies]
-winapi = "0.2"
-kernel32-sys = "0.2"
+[target.'cfg(unix)'.dependencies]
+nix = "0.6.0"
 
-[target.i686-pc-windows-gnu.dependencies]
-winapi = "0.2"
-kernel32-sys = "0.2"
-
-[target.x86_64-pc-windows-msvc.dependencies]
-winapi = "0.2"
-kernel32-sys = "0.2"
-
-[target.i686-pc-windows-msvc.dependencies]
+[target.'cfg(windows)'.dependencies]
 winapi = "0.2"
 kernel32-sys = "0.2"

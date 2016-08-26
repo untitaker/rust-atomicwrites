@@ -80,15 +80,34 @@ impl AtomicFile {
 
 #[cfg(unix)]
 mod imp {
+    extern crate nix;
+
     use std::{io,fs,path};
+    use std::os::unix::io::AsRawFd;
+
+    fn fsync_dir(x: &path::Path) -> io::Result<()> {
+        let f = try!(fs::File::open(x));
+        try!(nix::unistd::fsync(f.as_raw_fd()));
+        Ok(())
+    }
 
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        fs::rename(src, dst)
+        try!(fs::rename(src, dst));
+
+        let dst_directory = dst.parent().unwrap();
+        try!(fsync_dir(dst_directory));
+        Ok(())
     }
 
     pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
         try!(fs::hard_link(src, dst));
-        fs::remove_file(src)
+        try!(fs::remove_file(src));
+
+        let src_directory = src.parent().unwrap();
+        let dst_directory = dst.parent().unwrap();
+        try!(fsync_dir(dst_directory));
+        if src_directory != dst_directory { try!(fsync_dir(src_directory)); }
+        Ok(())
     }
 }
 
