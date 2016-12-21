@@ -2,7 +2,7 @@
 
 extern crate tempdir;
 
-use std::error::Error;
+use std::error::Error as ErrorTrait;
 use std::fmt;
 use std::io;
 use std::fs;
@@ -27,7 +27,7 @@ pub enum OverwriteBehavior {
 
 /// Represents an error raised by `AtomicFile.write`.
 #[derive(Debug)]
-pub enum AtomicWriteError<E> {
+pub enum Error<E> {
     /// The error originated in the library itself, while it was either creating a temporary file
     /// or moving the file into place.
     Internal(io::Error),
@@ -35,27 +35,27 @@ pub enum AtomicWriteError<E> {
     User(E)
 }
 
-impl<E: fmt::Display> fmt::Display for AtomicWriteError<E> {
+impl<E: fmt::Display> fmt::Display for Error<E> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            AtomicWriteError::Internal(ref e) => e.fmt(f),
-            AtomicWriteError::User(ref e) => e.fmt(f)
+            Error::Internal(ref e) => e.fmt(f),
+            Error::User(ref e) => e.fmt(f)
         }
     }
 }
 
-impl<E: Error> Error for AtomicWriteError<E> {
+impl<E: ErrorTrait> ErrorTrait for Error<E> {
     fn description(&self) -> &str {
         match *self {
-            AtomicWriteError::Internal(ref e) => e.description(),
-            AtomicWriteError::User(ref e) => e.description()
+            Error::Internal(ref e) => e.description(),
+            Error::User(ref e) => e.description()
         }
     }
 
-    fn cause(&self) -> Option<&Error> {
+    fn cause(&self) -> Option<&ErrorTrait> {
         match *self {
-            AtomicWriteError::Internal(ref e) => Some(e),
-            AtomicWriteError::User(ref e) => Some(e)
+            Error::Internal(ref e) => Some(e),
+            Error::User(ref e) => Some(e)
         }
     }
 }
@@ -98,14 +98,14 @@ impl AtomicFile {
 
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
     /// file atomically to `self.path`.
-    pub fn write<T, E, F>(&self, f: F) -> Result<T, AtomicWriteError<E>> where
+    pub fn write<T, E, F>(&self, f: F) -> Result<T, Error<E>> where
         F: FnOnce(&mut fs::File) -> Result<T, E>
     {
         macro_rules! try_internal {
             ($expr:expr) => {
                 match $expr {
                     Ok(r) => r,
-                    Err(e) => return Err(AtomicWriteError::Internal(e))
+                    Err(e) => return Err(Error::Internal(e))
                 }
             };
         }
@@ -118,7 +118,7 @@ impl AtomicFile {
         let tmppath = tmpdir.path().join("tmpfile.tmp");
         let rv = {
             let mut tmpfile = try_internal!(fs::File::create(&tmppath));
-            try!(f(&mut tmpfile).map_err(AtomicWriteError::User))
+            try!(f(&mut tmpfile).map_err(Error::User))
         };
         try_internal!(self.commit(&tmppath));
         Ok(rv)
