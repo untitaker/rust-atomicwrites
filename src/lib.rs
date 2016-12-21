@@ -101,26 +101,17 @@ impl AtomicFile {
     pub fn write<T, E, F>(&self, f: F) -> Result<T, Error<E>> where
         F: FnOnce(&mut fs::File) -> Result<T, E>
     {
-        macro_rules! try_internal {
-            ($expr:expr) => {
-                match $expr {
-                    Ok(r) => r,
-                    Err(e) => return Err(Error::Internal(e))
-                }
-            };
-        }
-
-        let tmpdir = try_internal!(TempDir::new_in(
+        let tmpdir = try!(TempDir::new_in(
             &self.tmpdir,
             ".atomicwrite"
-        ));
+        ).map_err(Error::Internal));
 
         let tmppath = tmpdir.path().join("tmpfile.tmp");
         let rv = {
-            let mut tmpfile = try_internal!(fs::File::create(&tmppath));
+            let mut tmpfile = try!(fs::File::create(&tmppath).map_err(Error::Internal));
             try!(f(&mut tmpfile).map_err(Error::User))
         };
-        try_internal!(self.commit(&tmppath));
+        try!(self.commit(&tmppath).map_err(Error::Internal));
         Ok(rv)
     }
 }
