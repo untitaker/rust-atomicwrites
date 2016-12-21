@@ -1,6 +1,6 @@
 [package]
 name = "atomicwrites"
-version = "0.0.14"
+version = "0.1.0"
 
 authors = ["Markus Unterwaditzer <markus@unterwaditzer.net>"]
 license = "MIT"
@@ -8,12 +8,12 @@ keywords = ["filesystem", "posix"]
 readme = "README.md"
 
 description = "Atomic file-writes."
-documentation = "https://rust-atomicwrites.unterwaditzer.net/"
-homepage = "https://rust-atomicwrites.unterwaditzer.net/"
+documentation = "https://docs.rs/crate/atomicwrites"
+homepage = "https://github.com/untitaker/rust-atomicwrites"
 repository = "https://github.com/untitaker/rust-atomicwrites"
 
 [dependencies]
-tempdir = "*"
+tempdir = "0.3"
 
 [target.'cfg(unix)'.dependencies]
 nix = "0.6.0"
