@@ -2,7 +2,7 @@ extern crate atomicwrites;
 extern crate tempdir;
 
 use std::{fs,path};
-use std::io::{Read,Write};
+use std::io::{self,Read,Write};
 use atomicwrites::{AtomicFile,AllowOverwrite,DisallowOverwrite};
 use tempdir::TempDir;
 
@@ -16,7 +16,9 @@ fn test_simple_allow_override() {
     let path = tmpdir.join("haha");
 
     let af = AtomicFile::new(&path, AllowOverwrite);
-    af.write(|f| f.write_all(b"HELLO")).unwrap();
+    let res: io::Result<()> = af.write(|f| f.write_all(b"HELLO"))
+        .map_err(|x| x.into());
+    res.unwrap();
     af.write(|f| f.write_all(b"HELLO")).unwrap();
 
     let mut rv = String::new();

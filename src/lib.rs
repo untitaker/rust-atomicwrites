@@ -35,6 +35,15 @@ pub enum Error<E> {
     User(E)
 }
 
+impl Into<io::Error> for Error<io::Error> {
+    fn into(self) -> io::Error {
+        match self {
+            Error::Internal(x) => x,
+            Error::User(x) => x
+        }
+    }
+}
+
 impl<E: fmt::Display> fmt::Display for Error<E> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
