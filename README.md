@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/untitaker/rust-atomicwrites.svg?branch=master)](https://travis-ci.org/untitaker/rust-atomicwrites)
 [![Windows build status](https://ci.appveyor.com/api/projects/status/h6642x2d54xl0sev?svg=true)](https://ci.appveyor.com/project/untitaker/rust-atomicwrites)
 
-- [Documentation](http://https://docs.rs/crate/atomicwrites)
+- [Documentation](https://docs.rs/crate/atomicwrites)
 - [Repository](https://github.com/untitaker/rust-atomicwrites)
 - [Crates.io](https://crates.io/crates/atomicwrites)
 
