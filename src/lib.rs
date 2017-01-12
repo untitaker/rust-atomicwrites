@@ -35,9 +35,9 @@ pub enum Error<E> {
     User(E)
 }
 
-impl Into<io::Error> for Error<io::Error> {
-    fn into(self) -> io::Error {
-        match self {
+impl From<Error<io::Error>> for io::Error {
+    fn from(e: Error<io::Error>) -> Self {
+        match e {
             Error::Internal(x) => x,
             Error::User(x) => x
         }
