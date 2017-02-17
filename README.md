@@ -16,12 +16,14 @@ when the target path already exists.
 
 ## Example
 
-    use atomicwrites::{AtomicFile,DisallowOverwrite};
+```rust
+use atomicwrites::{AtomicFile,DisallowOverwrite};
 
-    let af = AtomicFile::new("foo", DisallowOverwrite);
-    try!(af.write(|f| {
-        f.write_all(b"HELLO")
-    }));
+let af = AtomicFile::new("foo", DisallowOverwrite);
+try!(af.write(|f| {
+    f.write_all(b"HELLO")
+}));
+```
 
 ## License
 
