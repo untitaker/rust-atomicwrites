@@ -133,9 +133,17 @@ mod imp {
     use std::{io,fs,path};
     use std::os::unix::io::AsRawFd;
 
+    fn fsync<T: AsRawFd>(f: T) -> io::Result<()> {
+        match nix::unistd::fsync(f.as_raw_fd()) {
+            Ok(()) => Ok(()),
+            Err(nix::Error::Sys(errno)) => Err(errno.into()),
+            _ => unreachable!(),
+        }
+    }
+
     fn fsync_dir(x: &path::Path) -> io::Result<()> {
         let f = try!(fs::File::open(x));
-        try!(nix::unistd::fsync(f.as_raw_fd()));
+        try!(fsync(f));
         Ok(())
     }
 
