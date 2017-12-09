@@ -136,22 +136,10 @@ mod imp {
     fn fsync<T: AsRawFd>(f: T) -> io::Result<()> {
         match nix::unistd::fsync(f.as_raw_fd()) {
             Ok(()) => Ok(()),
-            Err(e) => {
-                let io_error = if let nix::Error::Sys(errno) = e {
-                    errno.into()
-                } else {
-                    let desc = match e {
-                        nix::Error::Sys(_) => unreachable!(),
-                        nix::Error::InvalidPath => "invalid path",
-                        nix::Error::InvalidUtf8 => "invalid utf-8",
-                        nix::Error::UnsupportedOperation => "unsupported operation",
-                    };
-
-                    io::Error::new(io::ErrorKind::Other, desc)
-                };
-
-                Err(io_error)
-            }
+            Err(nix::Error::Sys(errno)) => Err(errno.into()),
+            Err(nix::Error::InvalidPath) => Err(io::Error::new(io::ErrorKind::Other, "invalid path")),
+            Err(nix::Error::InvalidUtf8) => Err(io::Error::new(io::ErrorKind::Other, "invalid utf-8")),
+            Err(nix::Error::UnsupportedOperation) => Err(io::Error::new(io::ErrorKind::Other, "unsupported operation"))
         }
     }
 
