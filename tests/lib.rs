@@ -1,7 +1,7 @@
 extern crate atomicwrites;
 extern crate tempdir;
 
-use std::{fs,path};
+use std::{env,fs,path};
 use std::io::{self,Read,Write};
 use atomicwrites::{AtomicFile,AllowOverwrite,DisallowOverwrite};
 use tempdir::TempDir;
@@ -67,4 +67,18 @@ fn test_unicode() {
     let mut testfd = fs::File::open(&path).unwrap();
     testfd.read_to_string(&mut rv).unwrap();
     assert_eq!(rv, greeting);
+}
+
+#[test]
+fn test_weird_paths() {
+    let tmpdir = get_tmp();
+    env::set_current_dir(tmpdir).expect("setup failed");
+
+    AtomicFile::new("foo", AllowOverwrite).write(|f| {
+        f.write_all(b"HELLO")
+    }).unwrap();
+    let mut rv = String::new();
+    let mut testfd = fs::File::open("foo").unwrap();
+    testfd.read_to_string(&mut rv).unwrap();
+    assert_eq!(rv, "HELLO");
 }

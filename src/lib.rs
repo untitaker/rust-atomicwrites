@@ -6,6 +6,7 @@ use std::error::Error as ErrorTrait;
 use std::fmt;
 use std::io;
 use std::fs;
+use std::env;
 use std::borrow::Borrow;
 use std::path;
 use std::convert::AsRef;
@@ -69,6 +70,14 @@ impl<E: ErrorTrait> ErrorTrait for Error<E> {
     }
 }
 
+fn safe_parent(p: &path::Path) -> Option<&path::Path> {
+    match p.parent() {
+        None => None,
+        Some(x) if x.as_os_str().len() == 0 => Some(&path::Path::new(".")),
+        x => x
+    }
+}
+
 pub struct AtomicFile {
     path: path::PathBuf,
     overwrite: OverwriteBehavior,
@@ -83,7 +92,7 @@ impl AtomicFile {
     /// exists.
     pub fn new<P: AsRef<path::Path>>(path: P, overwrite: OverwriteBehavior) -> Self {
         let p = path.as_ref();
-        AtomicFile::new_with_tmpdir(p, overwrite, p.parent().unwrap_or(p))
+        AtomicFile::new_with_tmpdir(p, overwrite, safe_parent(p).unwrap_or(path::Path::new(".")))
     }
 
     pub fn new_with_tmpdir<P: AsRef<path::Path>>(path: P, overwrite: OverwriteBehavior, tmpdir: P) -> Self {
@@ -130,6 +139,8 @@ impl AtomicFile {
 mod imp {
     extern crate nix;
 
+    use super::safe_parent;
+
     use std::{io,fs,path};
     use std::os::unix::io::AsRawFd;
 
@@ -152,7 +163,7 @@ mod imp {
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
         try!(fs::rename(src, dst));
 
-        let dst_directory = dst.parent().unwrap();
+        let dst_directory = safe_parent(dst).unwrap();
         try!(fsync_dir(dst_directory));
         Ok(())
     }
@@ -161,8 +172,8 @@ mod imp {
         try!(fs::hard_link(src, dst));
         try!(fs::remove_file(src));
 
-        let src_directory = src.parent().unwrap();
-        let dst_directory = dst.parent().unwrap();
+        let src_directory = safe_parent(src).unwrap();
+        let dst_directory = safe_parent(dst).unwrap();
         try!(fsync_dir(dst_directory));
         if src_directory != dst_directory { try!(fsync_dir(src_directory)); }
         Ok(())
