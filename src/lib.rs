@@ -6,7 +6,6 @@ use std::error::Error as ErrorTrait;
 use std::fmt;
 use std::io;
 use std::fs;
-use std::env;
 use std::borrow::Borrow;
 use std::path;
 use std::convert::AsRef;
