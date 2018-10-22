@@ -19,7 +19,7 @@ pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 pub enum OverwriteBehavior {
     /// Overwrite files silently.
     AllowOverwrite,
-    
+
     /// Don't overwrite files. `AtomicFile.write` will raise errors for such conditions only after
     /// you've already written your data.
     DisallowOverwrite
@@ -89,12 +89,17 @@ impl AtomicFile {
     ///
     /// If `DisallowOverwrite` is given, errors will be returned from `self.write(...)` if the file
     /// exists.
-    pub fn new<P: AsRef<path::Path>>(path: P, overwrite: OverwriteBehavior) -> Self {
+    pub fn new<P>(path: P, overwrite: OverwriteBehavior) -> Self
+    where P: AsRef<path::Path>
+    {
         let p = path.as_ref();
         AtomicFile::new_with_tmpdir(p, overwrite, safe_parent(p).unwrap_or(path::Path::new(".")))
     }
 
-    pub fn new_with_tmpdir<P: AsRef<path::Path>>(path: P, overwrite: OverwriteBehavior, tmpdir: P) -> Self {
+    pub fn new_with_tmpdir<P, Q>(path: P, overwrite: OverwriteBehavior, tmpdir: Q) -> Self
+    where P: AsRef<path::Path>,
+          Q: AsRef<path::Path>
+    {
         AtomicFile {
             path: path.as_ref().to_path_buf(),
             overwrite: overwrite,
@@ -115,8 +120,8 @@ impl AtomicFile {
 
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
     /// file atomically to `self.path`.
-    pub fn write<T, E, F>(&self, f: F) -> Result<T, Error<E>> where
-        F: FnOnce(&mut fs::File) -> Result<T, E>
+    pub fn write<T, E, F>(&self, f: F) -> Result<T, Error<E>>
+    where F: FnOnce(&mut fs::File) -> Result<T, E>
     {
         let tmpdir = try!(TempDir::new_in(
             &self.tmpdir,
