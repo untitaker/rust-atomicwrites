@@ -123,17 +123,14 @@ impl AtomicFile {
     pub fn write<T, E, F>(&self, f: F) -> Result<T, Error<E>>
     where F: FnOnce(&mut fs::File) -> Result<T, E>
     {
-        let tmpdir = try!(TempDir::new_in(
-            &self.tmpdir,
-            ".atomicwrite"
-        ).map_err(Error::Internal));
+        let tmpdir = TempDir::new_in(&self.tmpdir, ".atomicwrite").map_err(Error::Internal)?;
 
         let tmppath = tmpdir.path().join("tmpfile.tmp");
         let rv = {
-            let mut tmpfile = try!(fs::File::create(&tmppath).map_err(Error::Internal));
-            try!(f(&mut tmpfile).map_err(Error::User))
+            let mut tmpfile = fs::File::create(&tmppath).map_err(Error::Internal)?;
+            f(&mut tmpfile).map_err(Error::User)?
         };
-        try!(self.commit(&tmppath).map_err(Error::Internal));
+        self.commit(&tmppath).map_err(Error::Internal)?;
         Ok(rv)
     }
 }
@@ -159,27 +156,25 @@ mod imp {
     }
 
     fn fsync_dir(x: &path::Path) -> io::Result<()> {
-        let f = try!(fs::File::open(x));
-        try!(fsync(f));
-        Ok(())
+        let f = fs::File::open(x)?;
+        fsync(f)
     }
 
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        try!(fs::rename(src, dst));
+        fs::rename(src, dst)?;
 
         let dst_directory = safe_parent(dst).unwrap();
-        try!(fsync_dir(dst_directory));
-        Ok(())
+        fsync_dir(dst_directory)
     }
 
     pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        try!(fs::hard_link(src, dst));
-        try!(fs::remove_file(src));
+        fs::hard_link(src, dst)?;
+        fs::remove_file(src)?;
 
         let src_directory = safe_parent(src).unwrap();
         let dst_directory = safe_parent(dst).unwrap();
-        try!(fsync_dir(dst_directory));
-        if src_directory != dst_directory { try!(fsync_dir(src_directory)); }
+        fsync_dir(dst_directory)?;
+        if src_directory != dst_directory { fsync_dir(src_directory)?; }
         Ok(())
     }
 }
