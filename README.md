@@ -25,6 +25,10 @@ try!(af.write(|f| {
 }));
 ```
 
+## Alternatives
+
+- [tempfile](https://github.com/Stebalien/tempfile) has a `persist` method doing the same thing.
+
 ## License
 
 Licensed under MIT, see ``LICENSE``.
