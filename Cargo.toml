@@ -12,6 +12,8 @@ documentation = "https://docs.rs/crate/atomicwrites"
 homepage = "https://github.com/untitaker/rust-atomicwrites"
 repository = "https://github.com/untitaker/rust-atomicwrites"
 
+exclude = ["/.travis.yml", "/Makefile", "/appveyor.yml"]
+
 [dependencies]
 tempdir = "0.3"
 
