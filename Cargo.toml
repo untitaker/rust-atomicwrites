@@ -1,6 +1,6 @@
 [package]
 name = "atomicwrites"
-version = "0.2.2"
+version = "0.2.3"
 
 authors = ["Markus Unterwaditzer <markus@unterwaditzer.net>"]
 license = "MIT"
