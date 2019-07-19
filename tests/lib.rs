@@ -82,3 +82,26 @@ fn test_weird_paths() {
     testfd.read_to_string(&mut rv).unwrap();
     assert_eq!(rv, "HELLO");
 }
+
+/// Test the error that is returned if the file already exists
+/// with `OverwriteBehavior::DisallowOverwrite`.
+#[test]
+fn disallow_overwrite_error() -> io::Result<()> {
+    let tmp = TempDir::new("test")?;
+    let file = tmp.path().join("dest");
+    let af = AtomicFile::new_with_tmpdir(&file, DisallowOverwrite, tmp.path());
+
+    // touch file
+    fs::write(&file, "")?;
+
+    match af.write(|f: &mut fs::File| f.write(b"abc")) {
+        Ok(_) => panic!("should fail!"),
+        Err(e) => {
+            let e = io::Error::from(e);
+            match e.kind() {
+                io::ErrorKind::AlreadyExists => Ok(()),
+                _ => Err(e)
+            }
+        }
+    }
+}
