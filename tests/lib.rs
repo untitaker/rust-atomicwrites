@@ -7,7 +7,7 @@ use atomicwrites::{AtomicFile,AllowOverwrite,DisallowOverwrite};
 use tempdir::TempDir;
 
 fn get_tmp() -> path::PathBuf {
-    TempDir::new_in(".", "atomicwrites-test").unwrap().into_path()
+    TempDir::new("atomicwrites-test").unwrap().into_path()
 }
 
 #[test]
