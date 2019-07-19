@@ -11,7 +11,7 @@ docs:
 	cd "$(THIS_DIR)"
 	cp src/lib.rs code.bak
 	cat README.md | sed -e 's/^/\/\/! /g' > readme.bak
-	sed -i '/\/\/ DOCS/r readme.bak' src/lib.rs
+	sed -i '/\/\/ INSERT_README_VIA_MAKE/r readme.bak' src/lib.rs
 	(cargo doc --no-deps && make clean) || (make clean && false)
 
 clean:
