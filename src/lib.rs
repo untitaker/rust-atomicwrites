@@ -1,5 +1,4 @@
-// DOCS
-
+// INSERT_README_VIA_MAKE
 extern crate tempdir;
 
 use std::error::Error as ErrorTrait;
@@ -15,6 +14,7 @@ use tempdir::TempDir;
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
 
+/// Whether to allow overwriting if the target file exists.
 #[derive(Clone,Copy)]
 pub enum OverwriteBehavior {
     /// Overwrite files silently.
@@ -35,6 +35,7 @@ pub enum Error<E> {
     User(E)
 }
 
+/// If your callback returns a `std::io::Error`, you can unwrap this type to `std::io::Error`.
 impl From<Error<io::Error>> for io::Error {
     fn from(e: Error<io::Error>) -> Self {
         match e {
@@ -77,18 +78,25 @@ fn safe_parent(p: &path::Path) -> Option<&path::Path> {
     }
 }
 
+/// Create a file and write to it atomically, in a callback.
 pub struct AtomicFile {
+    /// Path to the final file that is atomically written.
     path: path::PathBuf,
     overwrite: OverwriteBehavior,
+    /// Directory to which to write the temporary subdirectories.
     tmpdir: path::PathBuf
 }
 
 
 impl AtomicFile {
-    /// Helper for writing to `path` in write-only mode.
+    /// Helper for writing to the file at `path` atomically, in write-only mode.
     ///
-    /// If `DisallowOverwrite` is given, errors will be returned from `self.write(...)` if the file
-    /// exists.
+    /// If `OverwriteBehaviour::DisallowOverwrite` is given,
+    /// an `Error::Internal` containing an `std::io::ErrorKind::AlreadyExists`
+    /// will be returned from `self.write(...)` if the file exists.
+    ///
+    /// The temporary file is written to a temporary subdirectory in `.`, to ensure
+    /// it’s on the same filesystem (so that the move is atomic).
     pub fn new<P>(path: P, overwrite: OverwriteBehavior) -> Self
     where P: AsRef<path::Path>
     {
@@ -96,6 +104,9 @@ impl AtomicFile {
         AtomicFile::new_with_tmpdir(p, overwrite, safe_parent(p).unwrap_or(path::Path::new(".")))
     }
 
+    /// Like `AtomicFile::new`, but the temporary file is written to a temporary subdirectory in `tmpdir`.
+    ///
+    /// TODO: does `tmpdir` have to exist?
     pub fn new_with_tmpdir<P, Q>(path: P, overwrite: OverwriteBehavior, tmpdir: Q) -> Self
     where P: AsRef<path::Path>,
           Q: AsRef<path::Path>
@@ -107,6 +118,7 @@ impl AtomicFile {
         }
     }
 
+    /// Move the file to `self.path()`. Only call once! Not exposed!
     fn commit(&self, tmppath: &path::Path) -> io::Result<()> {
         match self.overwrite {
             AllowOverwrite => replace_atomic(tmppath, self.path()),
@@ -120,6 +132,8 @@ impl AtomicFile {
 
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
     /// file atomically to `self.path`.
+    ///
+    /// The temporary file is written to a randomized temporary subdirectory with prefix `.atomicwrite`.
     pub fn write<T, E, F>(&self, f: F) -> Result<T, Error<E>>
     where F: FnOnce(&mut fs::File) -> Result<T, E>
     {

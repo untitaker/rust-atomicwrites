@@ -9,7 +9,8 @@
 
 Atomic file-writes. Works on both POSIX and Windows.
 
-The basic idea is to write to temporary files, and move them when done writing.
+The basic idea is to write to temporary files (in the same file
+system), and move them when done writing.
 This avoids the problem of two programs writing to the same file. For
 `AllowOverwrite`, `rename` is used. For `DisallowOverwrite`, `link + unlink` is
 used instead to raise errors when the target path already exists.
