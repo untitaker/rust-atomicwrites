@@ -142,7 +142,9 @@ impl AtomicFile {
         let tmppath = tmpdir.path().join("tmpfile.tmp");
         let rv = {
             let mut tmpfile = fs::File::create(&tmppath).map_err(Error::Internal)?;
-            f(&mut tmpfile).map_err(Error::User)?
+            let r = f(&mut tmpfile).map_err(Error::User)?;
+            tmpfile.sync_all().map_err(Error::Internal)?;
+            r
         };
         self.commit(&tmppath).map_err(Error::Internal)?;
         Ok(rv)
