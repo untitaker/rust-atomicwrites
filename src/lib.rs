@@ -55,13 +55,6 @@ impl<E: fmt::Display> fmt::Display for Error<E> {
 }
 
 impl<E: ErrorTrait> ErrorTrait for Error<E> {
-    fn description(&self) -> &str {
-        match *self {
-            Error::Internal(ref e) => e.description(),
-            Error::User(ref e) => e.description()
-        }
-    }
-
     fn cause(&self) -> Option<&ErrorTrait> {
         match *self {
             Error::Internal(ref e) => Some(e),
