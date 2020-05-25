@@ -1,13 +1,13 @@
 extern crate atomicwrites;
-extern crate tempdir;
+extern crate tempfile;
 
 use std::{env,fs,path};
 use std::io::{self,Read,Write};
 use atomicwrites::{AtomicFile,AllowOverwrite,DisallowOverwrite};
-use tempdir::TempDir;
+use tempfile::TempDir;
 
 fn get_tmp() -> path::PathBuf {
-    TempDir::new("atomicwrites-test").unwrap().into_path()
+    TempDir::new().unwrap().into_path()
 }
 
 #[test]
@@ -87,7 +87,7 @@ fn test_weird_paths() {
 /// with `OverwriteBehavior::DisallowOverwrite`.
 #[test]
 fn disallow_overwrite_error() -> io::Result<()> {
-    let tmp = TempDir::new("test")?;
+    let tmp = TempDir::new()?;
     let file = tmp.path().join("dest");
     let af = AtomicFile::new_with_tmpdir(&file, DisallowOverwrite, tmp.path());
 
