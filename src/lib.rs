@@ -1,5 +1,5 @@
 // INSERT_README_VIA_MAKE
-extern crate tempdir;
+extern crate tempfile;
 
 use std::error::Error as ErrorTrait;
 use std::fmt;
@@ -8,8 +8,6 @@ use std::fs;
 use std::borrow::Borrow;
 use std::path;
 use std::convert::AsRef;
-
-use tempdir::TempDir;
 
 pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
@@ -130,7 +128,10 @@ impl AtomicFile {
     pub fn write<T, E, F>(&self, f: F) -> Result<T, Error<E>>
     where F: FnOnce(&mut fs::File) -> Result<T, E>
     {
-        let tmpdir = TempDir::new_in(&self.tmpdir, ".atomicwrite").map_err(Error::Internal)?;
+        let tmpdir = tempfile::Builder::new()
+            .prefix(".atomicwrite")
+            .tempdir_in(&self.tmpdir)
+            .map_err(Error::Internal)?;
 
         let tmppath = tmpdir.path().join("tmpfile.tmp");
         let rv = {
