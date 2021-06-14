@@ -63,7 +63,7 @@ impl<E: ErrorTrait> ErrorTrait for Error<E> {
 fn safe_parent(p: &path::Path) -> Option<&path::Path> {
     match p.parent() {
         None => None,
-        Some(x) if x.as_os_str().len() == 0 => Some(&path::Path::new(".")),
+        Some(x) if x.as_os_str().is_empty() => Some(&path::Path::new(".")),
         x => x,
     }
 }
