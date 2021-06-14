@@ -104,7 +104,7 @@ impl AtomicFile {
     {
         AtomicFile {
             path: path.as_ref().to_path_buf(),
-            overwrite: overwrite,
+            overwrite,
             tmpdir: tmpdir.as_ref().to_path_buf(),
         }
     }
