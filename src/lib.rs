@@ -91,7 +91,7 @@ impl AtomicFile {
         P: AsRef<path::Path>,
     {
         let p = path.as_ref();
-        AtomicFile::new_with_tmpdir(p, overwrite, safe_parent(p).unwrap_or(path::Path::new(".")))
+        AtomicFile::new_with_tmpdir(p, overwrite, safe_parent(p).unwrap_or_else(|| path::Path::new(".")))
     }
 
     /// Like `AtomicFile::new`, but the temporary file is written to a temporary subdirectory in `tmpdir`.
