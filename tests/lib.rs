@@ -1,9 +1,9 @@
 extern crate atomicwrites;
 extern crate tempfile;
 
-use std::{env,fs,path};
-use std::io::{self,Read,Write};
-use atomicwrites::{AtomicFile,AllowOverwrite,DisallowOverwrite};
+use atomicwrites::{AllowOverwrite, AtomicFile, DisallowOverwrite};
+use std::io::{self, Read, Write};
+use std::{env, fs, path};
 use tempfile::TempDir;
 
 fn get_tmp() -> path::PathBuf {
@@ -16,8 +16,7 @@ fn test_simple_allow_override() {
     let path = tmpdir.join("haha");
 
     let af = AtomicFile::new(&path, AllowOverwrite);
-    let res: io::Result<()> = af.write(|f| f.write_all(b"HELLO"))
-        .map_err(|x| x.into());
+    let res: io::Result<()> = af.write(|f| f.write_all(b"HELLO")).map_err(|x| x.into());
     res.unwrap();
     af.write(|f| f.write_all(b"HELLO")).unwrap();
 
@@ -59,9 +58,7 @@ fn test_unicode() {
     let path = tmpdir.join(dmitri);
 
     let af = AtomicFile::new(&path, DisallowOverwrite);
-    af.write(|f| {
-        f.write_all(greeting.as_bytes())
-    }).unwrap();
+    af.write(|f| f.write_all(greeting.as_bytes())).unwrap();
 
     let mut rv = String::new();
     let mut testfd = fs::File::open(&path).unwrap();
@@ -74,9 +71,9 @@ fn test_weird_paths() {
     let tmpdir = get_tmp();
     env::set_current_dir(tmpdir).expect("setup failed");
 
-    AtomicFile::new("foo", AllowOverwrite).write(|f| {
-        f.write_all(b"HELLO")
-    }).unwrap();
+    AtomicFile::new("foo", AllowOverwrite)
+        .write(|f| f.write_all(b"HELLO"))
+        .unwrap();
     let mut rv = String::new();
     let mut testfd = fs::File::open("foo").unwrap();
     testfd.read_to_string(&mut rv).unwrap();
@@ -100,7 +97,7 @@ fn disallow_overwrite_error() -> io::Result<()> {
             let e = io::Error::from(e);
             match e.kind() {
                 io::ErrorKind::AlreadyExists => Ok(()),
-                _ => Err(e)
+                _ => Err(e),
             }
         }
     }
