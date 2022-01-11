@@ -2,7 +2,7 @@
 name = "atomicwrites"
 version = "0.3.0"
 
-authors = ["Markus Unterwaditzer <markus@unterwaditzer.net>"]
+authors = ["Markus Unterwaditzer <markus-honeypot@unterwaditzer.net>"]
 license = "MIT"
 keywords = ["filesystem", "posix"]
 readme = "README.md"
