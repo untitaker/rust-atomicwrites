@@ -15,6 +15,8 @@ This avoids the problem of two programs writing to the same file. For
 `AllowOverwrite`, `rename` is used. For `DisallowOverwrite`, `link + unlink` is
 used instead to raise errors when the target path already exists.
 
+This is mostly a port of the same-named [Python package](https://github.com/untitaker/python-atomicwrites).
+
 ## Example
 
 ```rust
