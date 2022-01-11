@@ -151,7 +151,6 @@ impl AtomicFile {
 mod imp {
     use super::safe_parent;
 
-    use std::os::unix::io::AsRawFd;
     use std::{fs, io, path};
 
     fn fsync_dir(x: &path::Path) -> io::Result<()> {
