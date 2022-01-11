@@ -1,7 +1,6 @@
 // INSERT_README_VIA_MAKE
 extern crate tempfile;
 
-use std::borrow::Borrow;
 use std::convert::AsRef;
 use std::error::Error as ErrorTrait;
 use std::fmt;
@@ -63,7 +62,7 @@ impl<E: ErrorTrait> ErrorTrait for Error<E> {
 fn safe_parent(p: &path::Path) -> Option<&path::Path> {
     match p.parent() {
         None => None,
-        Some(x) if x.as_os_str().is_empty() => Some(&path::Path::new(".")),
+        Some(x) if x.as_os_str().is_empty() => Some(path::Path::new(".")),
         x => x,
     }
 }
@@ -119,7 +118,7 @@ impl AtomicFile {
 
     /// Get the target filepath.
     pub fn path(&self) -> &path::Path {
-        &self.path.borrow()
+        &self.path
     }
 
     /// Open a temporary file, call `f` on it (which is supposed to write to it), then move the
