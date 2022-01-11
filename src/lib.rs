@@ -149,33 +149,14 @@ impl AtomicFile {
 
 #[cfg(unix)]
 mod imp {
-    extern crate nix;
-
     use super::safe_parent;
 
     use std::os::unix::io::AsRawFd;
     use std::{fs, io, path};
 
-    fn fsync<T: AsRawFd>(f: T) -> io::Result<()> {
-        match nix::unistd::fsync(f.as_raw_fd()) {
-            Ok(()) => Ok(()),
-            Err(nix::Error::Sys(errno)) => Err(errno.into()),
-            Err(nix::Error::InvalidPath) => {
-                Err(io::Error::new(io::ErrorKind::Other, "invalid path"))
-            }
-            Err(nix::Error::InvalidUtf8) => {
-                Err(io::Error::new(io::ErrorKind::Other, "invalid utf-8"))
-            }
-            Err(nix::Error::UnsupportedOperation) => Err(io::Error::new(
-                io::ErrorKind::Other,
-                "unsupported operation",
-            )),
-        }
-    }
-
     fn fsync_dir(x: &path::Path) -> io::Result<()> {
         let f = fs::File::open(x)?;
-        fsync(f)
+        f.sync_all()
     }
 
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
