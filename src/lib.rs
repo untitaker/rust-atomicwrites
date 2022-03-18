@@ -1,4 +1,5 @@
 // INSERT_README_VIA_MAKE
+extern crate rustix;
 extern crate tempfile;
 
 use std::convert::AsRef;
@@ -154,30 +155,112 @@ impl AtomicFile {
 mod imp {
     use super::safe_parent;
 
+    use rustix::fs::AtFlags;
     use std::{fs, io, path};
 
-    fn fsync_dir(x: &path::Path) -> io::Result<()> {
-        let f = fs::File::open(x)?;
-        f.sync_all()
-    }
-
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        fs::rename(src, dst)?;
+        let src_parent_path = safe_parent(src).unwrap();
+        let dst_parent_path = safe_parent(dst).unwrap();
+        let src_child_path = src.file_name().unwrap();
+        let dst_child_path = dst.file_name().unwrap();
 
-        let dst_directory = safe_parent(dst).unwrap();
-        fsync_dir(dst_directory)
+        // Open the parent directories. If src and dst have the same parent
+        // path, open it once and reuse it.
+        let src_parent = fs::File::open(src_parent_path)?;
+        let dst_parent;
+        let dst_parent = if src_parent_path == dst_parent_path {
+            &src_parent
+        } else {
+            dst_parent = fs::File::open(dst_parent_path)?;
+            &dst_parent
+        };
+
+        // Do the `renameat`.
+        rustix::fs::renameat(
+            &src_parent,
+            src_child_path,
+            &dst_parent,
+            dst_child_path,
+            )?;
+
+        // Fsync the parent directory (or directories, if they're different).
+        src_parent.sync_all()?;
+        if src_parent_path != dst_parent_path {
+            dst_parent.sync_all()?;
+        }
+
+        Ok(())
     }
 
     pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
-        fs::hard_link(src, dst)?;
-        fs::remove_file(src)?;
+        let src_parent_path = safe_parent(src).unwrap();
+        let dst_parent_path = safe_parent(dst).unwrap();
+        let src_child_path = src.file_name().unwrap();
+        let dst_child_path = dst.file_name().unwrap();
 
-        let src_directory = safe_parent(src).unwrap();
-        let dst_directory = safe_parent(dst).unwrap();
-        fsync_dir(dst_directory)?;
-        if src_directory != dst_directory {
-            fsync_dir(src_directory)?;
+        // Open the parent directories. If src and dst have the same parent
+        // path, open it once and reuse it.
+        let src_parent = fs::File::open(src_parent_path)?;
+        let dst_parent;
+        let dst_parent = if src_parent_path == dst_parent_path {
+            &src_parent
+        } else {
+            dst_parent = fs::File::open(dst_parent_path)?;
+            &dst_parent
+        };
+
+        // On Linux, use `renameat2` with `RENAME_NOREPLACE` if we have it, as
+        // that does an atomic rename.
+        #[cfg(any(target_os = "android", target_os = "linux"))]
+        {
+            use std::sync::atomic::AtomicBool;
+            use std::sync::atomic::Ordering::Relaxed;
+            use rustix::fs::RenameFlags;
+
+            static NO_RENAMEAT2: AtomicBool = AtomicBool::new(false);
+            if !NO_RENAMEAT2.load(Relaxed) {
+                match rustix::fs::renameat_with(
+                    &src_parent,
+                    src_child_path,
+                    &dst_parent,
+                    dst_child_path,
+                    RenameFlags::NOREPLACE,
+                ) {
+                    Ok(()) => {
+                        // Fsync the parent directory (or directories, if
+                        // they're different).
+                        src_parent.sync_all()?;
+                        if src_parent_path != dst_parent_path {
+                            dst_parent.sync_all()?;
+                        }
+                        return Ok(());
+                    }
+                    Err(rustix::io::Error::NOSYS) => {
+                        // The OS doesn't support `renameat2`; remember this so
+                        // that we don't bother calling it again.
+                        NO_RENAMEAT2.store(true, Relaxed);
+                    }
+                    Err(e) => return Err(e.into()),
+                }
+            }
         }
+
+        // Otherwise, hard-link the src to the dst, and then delete the dst.
+        rustix::fs::linkat(
+            &src_parent,
+            src_child_path,
+            &dst_parent,
+            dst_child_path,
+            AtFlags::empty(),
+        )?;
+        rustix::fs::unlinkat(&src_parent, src_child_path, AtFlags::empty())?;
+
+        // Fsync the parent directory (or directories, if they're different).
+        src_parent.sync_all()?;
+        if src_parent_path != dst_parent_path {
+            dst_parent.sync_all()?;
+        }
+
         Ok(())
     }
 }
