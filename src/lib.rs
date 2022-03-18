@@ -176,12 +176,7 @@ mod imp {
         };
 
         // Do the `renameat`.
-        rustix::fs::renameat(
-            &src_parent,
-            src_child_path,
-            &dst_parent,
-            dst_child_path,
-            )?;
+        rustix::fs::renameat(&src_parent, src_child_path, &dst_parent, dst_child_path)?;
 
         // Fsync the parent directory (or directories, if they're different).
         src_parent.sync_all()?;
@@ -213,9 +208,9 @@ mod imp {
         // that does an atomic rename.
         #[cfg(any(target_os = "android", target_os = "linux"))]
         {
+            use rustix::fs::RenameFlags;
             use std::sync::atomic::AtomicBool;
             use std::sync::atomic::Ordering::Relaxed;
-            use rustix::fs::RenameFlags;
 
             static NO_RENAMEAT2: AtomicBool = AtomicBool::new(false);
             if !NO_RENAMEAT2.load(Relaxed) {
