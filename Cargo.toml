@@ -17,5 +17,8 @@ exclude = ["/.travis.yml", "/Makefile", "/appveyor.yml"]
 [dependencies]
 tempfile = "3.1"
 
+[target.'cfg(unix)'.dependencies]
+rustix = "0.34.0"
+
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3", features = ["winbase"] }
