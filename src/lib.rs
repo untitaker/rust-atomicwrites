@@ -134,6 +134,23 @@ impl AtomicFile {
     where
         F: FnOnce(&mut fs::File) -> Result<T, E>,
     {
+        let mut options = fs::OpenOptions::new();
+        // These are the same options as `File::create`.
+        options.write(true).create(true).truncate(true);
+        self.write_with_options(f, options)
+    }
+
+    /// Open a temporary file with custom [`OpenOptions`], call `f` on it (which is supposed to
+    /// write to it), then move the file atomically to `self.path`.
+    ///
+    /// The temporary file is written to a randomized temporary subdirectory with prefix
+    /// `.atomicwrite`.
+    ///
+    /// [`OpenOptions`]: fs::OpenOptions
+    pub fn write_with_options<T, E, F>(&self, f: F, options: fs::OpenOptions) -> Result<T, Error<E>>
+    where
+        F: FnOnce(&mut fs::File) -> Result<T, E>,
+    {
         let tmpdir = tempfile::Builder::new()
             .prefix(".atomicwrite")
             .tempdir_in(&self.tmpdir)
@@ -141,7 +158,7 @@ impl AtomicFile {
 
         let tmppath = tmpdir.path().join("tmpfile.tmp");
         let rv = {
-            let mut tmpfile = fs::File::create(&tmppath).map_err(Error::Internal)?;
+            let mut tmpfile = options.open(&tmppath).map_err(Error::Internal)?;
             let r = f(&mut tmpfile).map_err(Error::User)?;
             tmpfile.sync_all().map_err(Error::Internal)?;
             r
