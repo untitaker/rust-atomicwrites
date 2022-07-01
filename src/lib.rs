@@ -247,7 +247,7 @@ mod imp {
                         }
                         return Ok(());
                     }
-                    Err(rustix::io::Error::NOSYS) => {
+                    Err(rustix::io::Errno::NOSYS) => {
                         // The OS doesn't support `renameat2`; remember this so
                         // that we don't bother calling it again.
                         NO_RENAMEAT2.store(true, Relaxed);
