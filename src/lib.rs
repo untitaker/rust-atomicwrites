@@ -201,7 +201,7 @@ mod imp {
 
 #[cfg(windows)]
 mod imp {
-    extern crate winapi;
+    extern crate windows_sys;
 
     use std::ffi::OsStr;
     use std::os::windows::ffi::OsStrExt;
@@ -217,27 +217,27 @@ mod imp {
         };
     }
 
-    fn path_to_windows_str<T: AsRef<OsStr>>(x: T) -> Vec<winapi::shared::ntdef::WCHAR> {
+    fn path_to_windows_str<T: AsRef<OsStr>>(x: T) -> Vec<u16> {
         x.as_ref().encode_wide().chain(Some(0)).collect()
     }
 
     pub fn replace_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
         call!(unsafe {
-            winapi::um::winbase::MoveFileExW(
+            windows_sys::Win32::Storage::FileSystem::MoveFileExW(
                 path_to_windows_str(src).as_ptr(),
                 path_to_windows_str(dst).as_ptr(),
-                winapi::um::winbase::MOVEFILE_WRITE_THROUGH
-                    | winapi::um::winbase::MOVEFILE_REPLACE_EXISTING,
+                windows_sys::Win32::Storage::FileSystem::MOVEFILE_WRITE_THROUGH
+                    | windows_sys::Win32::Storage::FileSystem::MOVEFILE_REPLACE_EXISTING,
             )
         })
     }
 
     pub fn move_atomic(src: &path::Path, dst: &path::Path) -> io::Result<()> {
         call!(unsafe {
-            winapi::um::winbase::MoveFileExW(
+            windows_sys::Win32::Storage::FileSystem::MoveFileExW(
                 path_to_windows_str(src).as_ptr(),
                 path_to_windows_str(dst).as_ptr(),
-                winapi::um::winbase::MOVEFILE_WRITE_THROUGH,
+                windows_sys::Win32::Storage::FileSystem::MOVEFILE_WRITE_THROUGH,
             )
         })
     }
