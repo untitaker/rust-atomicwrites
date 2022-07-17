@@ -18,7 +18,7 @@ exclude = ["/.travis.yml", "/Makefile", "/appveyor.yml"]
 tempfile = "3.1"
 
 [target.'cfg(unix)'.dependencies]
-rustix = "0.34.0"
+rustix = { version = "0.35.6", features = ["fs"] }
 
 [target.'cfg(windows)'.dependencies.windows-sys]
 version = "0.36.0"
