@@ -23,9 +23,9 @@ This is mostly a port of the same-named [Python package](https://github.com/unti
 use atomicwrites::{AtomicFile,DisallowOverwrite};
 
 let af = AtomicFile::new("foo", DisallowOverwrite);
-try!(af.write(|f| {
+af.write(|f| {
     f.write_all(b"HELLO")
-}));
+})?;
 ```
 
 ## Alternatives
