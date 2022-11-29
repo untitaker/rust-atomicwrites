@@ -1,4 +1,5 @@
 // INSERT_README_VIA_MAKE
+#[cfg(unix)]
 extern crate rustix;
 extern crate tempfile;
 
@@ -193,7 +194,7 @@ mod imp {
         };
 
         // Do the `renameat`.
-        rustix::fs::renameat(&src_parent, src_child_path, &dst_parent, dst_child_path)?;
+        rustix::fs::renameat(&src_parent, src_child_path, dst_parent, dst_child_path)?;
 
         // Fsync the parent directory (or directories, if they're different).
         src_parent.sync_all()?;
@@ -234,7 +235,7 @@ mod imp {
                 match rustix::fs::renameat_with(
                     &src_parent,
                     src_child_path,
-                    &dst_parent,
+                    dst_parent,
                     dst_child_path,
                     RenameFlags::NOREPLACE,
                 ) {
@@ -261,7 +262,7 @@ mod imp {
         rustix::fs::linkat(
             &src_parent,
             src_child_path,
-            &dst_parent,
+            dst_parent,
             dst_child_path,
             AtFlags::empty(),
         )?;
