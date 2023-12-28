@@ -21,7 +21,7 @@ tempfile = "3.1"
 rustix = { version = "0.38.0", features = ["fs"] }
 
 [target.'cfg(windows)'.dependencies.windows-sys]
-version = "0.48.0"
+version = "0.52.0"
 features = [
     "Win32_Foundation",
     "Win32_Storage_FileSystem",
