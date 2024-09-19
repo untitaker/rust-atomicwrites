@@ -248,9 +248,20 @@ mod imp {
                         }
                         return Ok(());
                     }
-                    Err(rustix::io::Errno::NOSYS) => {
-                        // The OS doesn't support `renameat2`; remember this so
-                        // that we don't bother calling it again.
+                    Err(rustix::io::Errno::INVAL) | Err(rustix::io::Errno::NOSYS) => {
+                        // `NOSYS` means the OS doesn't support `renameat2`;
+                        // remember this so that we don't bother calling it
+                        // again.
+                        //
+                        // `INVAL` might mean we're on a filesystem that
+                        // doesn't support the `NOREPLACE` flag, such as ZFS,
+                        // so let's conservatively avoid using `renameat2`
+                        // again as well.
+                        //
+                        // (Or, `INVAL` might mean that the user is trying to
+                        // make a directory a subdirectory of itself, in which
+                        // case responding by disabling further use of
+                        // `renameat2` is unfortunate but what else can we do?)
                         NO_RENAMEAT2.store(true, Relaxed);
                     }
                     Err(e) => return Err(e.into()),
