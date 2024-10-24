@@ -10,7 +10,7 @@ use std::fs;
 use std::io;
 use std::path;
 
-pub use OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
+pub use crate::OverwriteBehavior::{AllowOverwrite, DisallowOverwrite};
 
 /// Whether to allow overwriting if the target file exists.
 #[derive(Clone, Copy)]

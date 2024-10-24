@@ -1,10 +1,12 @@
 [package]
 name = "atomicwrites"
 version = "0.4.4"
+edition = "2015"
 
 authors = ["Markus Unterwaditzer <markus-honeypot@unterwaditzer.net>"]
 license = "MIT"
 keywords = ["filesystem", "posix"]
+categories = ["filesystem"]
 readme = "README.md"
 
 description = "Atomic file-writes."
