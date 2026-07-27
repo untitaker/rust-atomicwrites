@@ -1,21 +1,22 @@
 # rust-atomicwrites
 
-[![Build Status](https://travis-ci.org/untitaker/rust-atomicwrites.svg?branch=master)](https://travis-ci.org/untitaker/rust-atomicwrites)
-[![Windows build status](https://ci.appveyor.com/api/projects/status/h6642x2d54xl0sev?svg=true)](https://ci.appveyor.com/project/untitaker/rust-atomicwrites)
+[![Build Status](https://github.com/untitaker/rust-atomicwrites/actions/workflows/msrv.yml/badge.svg)](https://github.com/untitaker/rust-atomicwrites/actions)
+[![Windows Build Status](https://ci.appveyor.com/api/projects/status/h6642x2d54xl0sev?svg=true)](https://ci.appveyor.com/project/untitaker/rust-atomicwrites)
 
 - [Documentation](https://docs.rs/crate/atomicwrites)
 - [Repository](https://github.com/untitaker/rust-atomicwrites)
-- [Crates.io](https://crates.io/crates/atomicwrites)
+- [crates.io](https://crates.io/crates/atomicwrites)
 
 Atomic file-writes. Works on both POSIX and Windows.
 
-The basic idea is to write to temporary files (in the same file
-system), and move them when done writing.
-This avoids the problem of two programs writing to the same file. For
-`AllowOverwrite`, `rename` is used. For `DisallowOverwrite`, `link + unlink` is
-used instead to raise errors when the target path already exists.
+The basic idea is to write to temporary files (in the same file system), and
+move them when done writing. This avoids the problem of two programs writing to
+the same file. For `AllowOverwrite`, `rename` is used. For `DisallowOverwrite`,
+`link + unlink` is used instead to raise errors when the target path already
+exists.
 
-This is mostly a port of the same-named [Python package](https://github.com/untitaker/python-atomicwrites).
+This is mostly a port of the same-named
+[Python package](https://github.com/untitaker/python-atomicwrites).
 
 ## Example
 
@@ -30,7 +31,8 @@ af.write(|f| {
 
 ## Alternatives
 
-- [tempfile](https://github.com/Stebalien/tempfile) has a `persist` method doing the same thing.
+- [tempfile](https://github.com/Stebalien/tempfile) has a `persist` method doing
+  the same thing.
 
 ## License
 
