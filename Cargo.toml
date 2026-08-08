@@ -14,7 +14,7 @@ documentation = "https://docs.rs/crate/atomicwrites"
 homepage = "https://github.com/untitaker/rust-atomicwrites"
 repository = "https://github.com/untitaker/rust-atomicwrites"
 
-exclude = ["/.travis.yml", "/Makefile", "/appveyor.yml"]
+exclude = ["/Makefile", "/appveyor.yml"]
 
 [dependencies]
 tempfile = "3.1"
