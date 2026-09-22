@@ -29,6 +29,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: check
+          args: ${{ matrix.rust == '1.63.0' && '--locked' || '' }}
 
       - name: Run cargo check (nightly)
         if: matrix.rust == 'nightly'
@@ -63,6 +64,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: test
+          args: ${{ matrix.rust == '1.63.0' && '--locked' || '' }}
 
       - name: Run cargo test (nightly)
         if: matrix.rust == 'nightly'
