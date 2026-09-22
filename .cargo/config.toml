@@ -1,0 +1,4 @@
+[resolver]
+# Keep Cargo.lock resolvable on our MSRV (see rust-version in Cargo.toml).
+# Requires Cargo 1.84+; older cargo ignores this and should use --locked.
+incompatible-rust-versions = "fallback"
